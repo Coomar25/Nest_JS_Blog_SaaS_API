@@ -1,3 +1,25 @@
+# GraphQL Crash Course - Build an Expense Tracker App
+
+RBAC in nest js
+
+## Features:
+
+<!-- - 🌟 Tech stack: MERN (MongoDB, Express.js, React.js, Node.js) + Apollo GraphQL
+- 📝 Learn type definitions and resolvers for defining GraphQL schema and data fetching logic
+- 🔄 Mutations for modifying data in the GraphQL API and establishing graph relations
+- 🎃 Authentication with Passport.js and MongoDB session store
+- 🚀 Global state management with Apollo Client
+- 🐞 Error handling both on the server and on the client
+- ⭐ Deployment made easy with a platform called Render
+- 👾 Cron jobs for scheduled tasks and automation
+- ⏳ And much more! -->
+
+# BACKEND DEPENDENCIES
+
+```bash
+npm install @nestjs/passport passport-jwt
+```
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
