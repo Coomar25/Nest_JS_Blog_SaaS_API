@@ -3,6 +3,9 @@ import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { AdminLoginDto } from './dto/login-admin.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
+import { RolesGuard } from 'src/auth/guard/role.guard';
+import { Roles } from 'src/auth/entities/roles.decorator';
+import { RoleEnum } from 'src/constants/enum';
 
 @Controller('admin')
 export class AdminController {
@@ -19,7 +22,8 @@ export class AdminController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.ADMIN)
   findAll() {
     return this.adminService.findAll();
   }

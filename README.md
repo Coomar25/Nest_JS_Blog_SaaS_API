@@ -20,7 +20,7 @@ RBAC in nest js
 npm install @nestjs/passport @nestjs/jwt passport-jwt class-validator
 ```
 
-# Create three app i.e auth, user and admin
+## Create three app i.e auth, user and admin
 
 ```bash
  nest generate resource user --no-spec
@@ -28,7 +28,7 @@ npm install @nestjs/passport @nestjs/jwt passport-jwt class-validator
  nest generate resource admin --no-spec
 ```
 
-# CREATE A jwt.stratefy.ts file and add the following code
+## CREATE A jwt.stratefy.ts file inside the auth/strategy/ path and add the following code
 
 ```bash
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -53,7 +53,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 }
 ```
 
-# Register the JwtStrategy into AuthModule providers
+here the the jwt strategy run before guard in which the validate method automatically validate the jwt token and returns the decoded token
+if we need to use the JwtStrategy in any module we need to import the JwtModule look below code we implemented jwt strategy in auth/strategy folders
+
+## Register the JwtStrategy into AuthModule providers
 
 ```bash
 # Before
@@ -91,7 +94,7 @@ export class AuthModule {}
 
 ```
 
-# CREATE THE AUTH DTO
+## CREATE THE AUTH DTO
 
 ```bash
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
@@ -112,9 +115,9 @@ export class CreateAuthDto {
 }
 ```
 
-# CREATE SIGNIN FUNCTIONALITY WHICH RESPONDE JWT TOKEN USING ONE SECRET KEY
+## CREATE SIGNIN FUNCTIONALITY WHICH RESPONDE JWT TOKEN USING ONE SECRET KEY
 
-# THIS IS BASIC SIGNIN FUNCTIONALITY WHICH ONLY RESPONSE TOKEN USING THE JWT SERCIVE
+THIS IS BASIC SIGNIN FUNCTIONALITY WHICH ONLY RESPONSE TOKEN USING THE JWT SERCIVE
 
 ```
 //YOU CAN PASTE ENTIRE CODE
@@ -166,9 +169,9 @@ export class AdminService {
 
 ```
 
-# FOR TO USE THE JWTSERVICE WE MUST NEED TO IMPORT THE JWTMODULE WHERE ARE GOING TO USE THAT SERVICE
+## FOR TO USE THE JWTSERVICE WE MUST NEED TO IMPORT THE JWTMODULE WHERE ARE GOING TO USE THAT SERVICE
 
-# YOU CAN SEE EXAMPLE BELOW WE IMPORT THE JWT MODULE IN ADMIN MODULE AS YOU CAN SEE IN PREVIOUS AUTH MODULE THERE TOO WE IMPORT THE JWT MODULE
+YOU CAN SEE EXAMPLE BELOW WE IMPORT THE JWT MODULE IN ADMIN MODULE AS YOU CAN SEE IN PREVIOUS AUTH MODULE THERE TOO WE IMPORT THE JWT MODULE
 
 ```
 import { Module } from '@nestjs/common';
@@ -189,6 +192,59 @@ import { configCredentials } from 'src/config/config';
 })
 export class AdminModule {}
 
+```
+
+## up unitl know we only implement the jwt token authentication still the roles based access control is remaining
+
+create the files inside the auth/entities/roles.decorators.ts file and paste the below code
+
+```
+import { SetMetadata } from '@nestjs/common';
+import { RoleEnum } from 'src/constants/enum';
+export const Roles = (...roles: RoleEnum[]) => SetMetadata('roles', roles);
+
+```
+
+create the roles.guard.ts files inside the auth/guard/role.guard.ts files and paste the following code please fixes bugs as while implementing this docs i implemented and fixes the issues
+
+```
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { Observable } from 'rxjs';
+import { RoleEnum } from 'src/constants/enum';
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    // what are the required roles to access this route
+    const requiredRoles = this.reflector.getAllAndOverride<RoleEnum[]>(
+      'roles',
+      [context.getHandler(), context.getClass()],
+    );
+    console.log('🚀 ~ requiredRoles ~ user:', requiredRoles);
+
+    // if the role is not assigned to the route which is in controller then allow access
+    if (!requiredRoles) {
+      return true;
+    }
+    //from the request get the id and currentRole of the user who is trying to access the route. The id and currentRole is set in the validate method of JwtStrategy which runs first and then this guard runs to check the role of the user.
+
+    const { user } = context.switchToHttp().getRequest();
+    console.log('🚀 ~ RolesGuard ~ user:', user);
+
+    // if the user has the required role validate the role and allow access
+    const validateIncommingRole = requiredRoles.some((roles) =>
+      user.currentRole.includes(roles),
+    );
+    if (validateIncommingRole) {
+      return true;
+    }
+  }
+}
 
 
 ```
