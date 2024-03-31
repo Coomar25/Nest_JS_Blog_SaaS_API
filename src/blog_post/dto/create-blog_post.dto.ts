@@ -1,0 +1,32 @@
+import { BlogPostStatus } from '@prisma/client';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+export class CreateBlogPostDto {
+  @IsNotEmpty()
+  @IsString()
+  slug: string;
+
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  tags: string[];
+
+  @IsNotEmpty()
+  @IsString()
+  status: BlogPostStatus;
+
+  @IsNotEmpty()
+  @IsNumber()
+  authorId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  category_id: number;
+}
