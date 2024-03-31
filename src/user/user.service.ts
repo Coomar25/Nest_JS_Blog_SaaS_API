@@ -5,7 +5,7 @@ import { ResponseEnum, RoleEnum } from 'src/constants/enum';
 import * as bcrypt from 'bcrypt';
 import { UserSignInDto } from './dto/signin-user.dto';
 import { JwtService } from '@nestjs/jwt';
-
+import { Response } from 'express';
 @Injectable()
 export class UserService {
   constructor(
@@ -60,7 +60,7 @@ export class UserService {
     }
   }
 
-  async user_signin(UserSignInDto: UserSignInDto) {
+  async user_signin(UserSignInDto: UserSignInDto, response: Response) {
     try {
       const isExist = await this.prismaService.blog_user.findUnique({
         where: {
@@ -72,8 +72,9 @@ export class UserService {
         },
       });
       if (!isExist) {
-        throw new HttpException(ResponseEnum.NOT_FOUND, HttpStatus.NOT_FOUND);
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
+
       const PasswordIsMatch = await bcrypt.compare(
         UserSignInDto.password,
         isExist.password,
@@ -84,27 +85,56 @@ export class UserService {
           id: isExist.id,
           role: RoleEnum.USER,
         });
-        // const payload = { id: 1, role: 'Admin' };
-        // const access_token = await this.jwtService.sign(payload);
+
+        response.cookie('access_token', access_token, {
+          httpOnly: true,
+          secure: true,
+        });
+
         return {
           message: ResponseEnum.SUCCESS,
           access: access_token,
         };
+      } else {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
     } catch (err) {
-      throw new HttpException(
-        `Failed while signing in ${err}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  user_profile(requestBody: any) {
+  async user_profile(requestBody: any) {
     try {
-      console.log(
-        '🚀 ~ UserService ~ user_profile ~ requestBody:',
-        requestBody,
-      );
+      const isExist = await this.prismaService.blog_user.findUnique({
+        where: {
+          id: requestBody.user.id,
+        },
+        select: {
+          id: true,
+          email: true,
+          address: true,
+          city: true,
+          contact: true,
+          dob: true,
+          country: true,
+          name: true,
+          user_profile: true,
+          postal: true,
+          state: true,
+          _count: {
+            select: {
+              blogpost: true,
+            },
+          },
+        },
+      });
+      if (!isExist) {
+        throw new HttpException(ResponseEnum.NOT_FOUND, HttpStatus.NOT_FOUND);
+      }
+      return {
+        message: ResponseEnum.SUCCESS,
+        data: isExist,
+      };
     } catch (err) {
       throw new HttpException(
         ResponseEnum.INTERNAL_SERVER_ERROR,

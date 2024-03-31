@@ -1,7 +1,12 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { RoleEnum } from 'src/constants/enum';
+import { ResponseEnum, RoleEnum } from 'src/constants/enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -30,8 +35,10 @@ export class RolesGuard implements CanActivate {
     const validateIncommingRole = requiredRoles.some((roles) =>
       user.currentRole.includes(roles),
     );
-    if (validateIncommingRole) {
-      return true;
+    // If the user is not present, or if the user's role doesn't match any of the required roles, throw an UnauthorizedException
+    if (!validateIncommingRole) {
+      throw new UnauthorizedException(ResponseEnum.UNAUTHORIZED);
     }
+    return true;
   }
 }
