@@ -30,6 +30,7 @@ model blog_user {
   blog_comment           blog_comment[]
   blog_total_viewed_post blog_total_viewed_post[]
   blog_bookmarks         blog_bookmarks[]
+  blog_like_dislike      blog_like_dislike[]
 }
 
 enum BlogPostStatus {
@@ -40,8 +41,9 @@ enum BlogPostStatus {
 model blog_categories {
   id        Int         @id @default(autoincrement())
   name      String
+  tags      String[]
   createdAt DateTime    @default(now())
-  updatedAt DateTime
+  updatedAt DateTime    @updatedAt
   blog_post blog_post[]
 }
 
@@ -67,10 +69,12 @@ model blog_post {
 
 model blog_like_dislike {
   id           Int       @id @default(autoincrement())
-  like         Boolean
-  dislike      Boolean
+  like         Boolean   @default(false)
+  dislike      Boolean   @default(false)
   blog_post_id Int
   blog_post    blog_post @relation(fields: [blog_post_id], references: [id])
+  user_id      Int
+  blog_user    blog_user @relation(fields: [user_id], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }

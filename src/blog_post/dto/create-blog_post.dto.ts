@@ -30,3 +30,14 @@ export class CreateBlogPostDto {
   @IsNumber()
   category_id: number;
 }
+
+export class BlogCatgoryDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  tags: string[];
+}
