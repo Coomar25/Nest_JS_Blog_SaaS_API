@@ -4,7 +4,6 @@ import { UpdateBlogPostDto } from './dto/update-blog_post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
-import { response } from 'express';
 
 @Injectable()
 export class BlogPostService {

@@ -10,6 +10,10 @@ import {
   Version,
   Request,
   Res,
+  Patch,
+  Param,
+  ParseIntPipe,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,6 +24,7 @@ import { Roles } from 'src/auth/entities/roles.decorator';
 import { RoleEnum } from 'src/constants/enum';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -48,6 +53,38 @@ export class UserController {
   @Version('1')
   callUserProfile(@Request() req: any) {
     return this.userService.user_profile(req);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.USER)
+  @Version('1')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    console.log('🚀 ~ UserController ~ update ~ id:', id);
+    return this.userService.update(+id, updateUserDto);
+  }
+
+  @Get('all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.ADMIN)
+  @Version('1')
+  AllUsers() {
+    return this.userService.getAllUsers();
+  }
+
+  @Get('single/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.ADMIN)
+  @Version('1')
+  singleUser(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    id: number,
+  ) {
+    console.log('🚀 ~ UserController ~ singleUser ~ id: type of', typeof id);
+    return this.userService.singleUsers(id);
   }
 
   // @Get(':id')

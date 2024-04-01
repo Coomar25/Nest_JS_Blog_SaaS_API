@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { UserSignInDto } from './dto/signin-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
+import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -19,17 +20,12 @@ export class UserService {
           email: createUserDto.email,
         },
       });
-      console.log('🚀 ~ UserService ~ create ~ isExist:', isExist);
       if (isExist) {
         throw new HttpException('user already exist', HttpStatus.CONFLICT);
       }
       const dateofbirth = new Date(createUserDto.dob);
-      console.log('🚀 ~ UserService ~ create ~ dateofbirth:', dateofbirth);
       const encryptedPassword = await bcrypt.hash(createUserDto.password, 10);
-      console.log(
-        '🚀 ~ UserService ~ create ~ encryptedPassword:',
-        encryptedPassword,
-      );
+
       const createUser = await this.prismaService.blog_user.create({
         data: {
           email: createUserDto.email,
@@ -140,6 +136,112 @@ export class UserService {
         ResponseEnum.INTERNAL_SERVER_ERROR,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    console.log('🚀 ~ UserService ~ update ~ updateUserDto:', updateUserDto);
+    try {
+      const isExistUser = await this.prismaService.blog_user.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!isExistUser) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      const encryptedPassword = await bcrypt.hash(updateUserDto.password, 10);
+
+      await this.prismaService.blog_user.update({
+        where: {
+          id,
+        },
+        data: {
+          name: updateUserDto.name ? updateUserDto.name : isExistUser.name,
+          password: encryptedPassword
+            ? encryptedPassword
+            : isExistUser.password,
+          address: updateUserDto.address
+            ? updateUserDto.address
+            : isExistUser.address,
+          user_profile: updateUserDto.user_profile
+            ? updateUserDto.user_profile
+            : isExistUser.user_profile,
+          city: updateUserDto.city ? updateUserDto.city : isExistUser.city,
+          country: updateUserDto.country
+            ? updateUserDto.country
+            : isExistUser.country,
+          dob: `${updateUserDto.dob ? updateUserDto.dob : isExistUser.dob}`,
+          state: updateUserDto.state ? updateUserDto.state : isExistUser.state,
+        },
+      });
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getAllUsers() {
+    try {
+      const allUsers = await this.prismaService.blog_user.findMany({
+        select: {
+          email: true,
+          name: true,
+          address: true,
+          contact: true,
+          user_profile: true,
+          city: true,
+          country: true,
+          dob: true,
+          postal: true,
+          state: true,
+          _count: {
+            select: {
+              blogpost: true,
+              blog_comment: true,
+              blog_bookmarks: true,
+              blog_total_viewed_post: true,
+              blog_like_dislike: true,
+            },
+          },
+        },
+      });
+
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.OK,
+        data: allUsers,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async singleUsers(id: number) {
+    try {
+      const isExistUser = await this.prismaService.blog_user.findUnique({
+        where: {
+          id: +id,
+        },
+      });
+      if (!isExistUser) {
+        return {
+          message: ResponseEnum.NOT_FOUND,
+          status: HttpStatus.NOT_FOUND,
+        };
+      }
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.OK,
+        data: isExistUser,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
