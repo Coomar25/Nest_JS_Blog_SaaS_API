@@ -6,8 +6,9 @@ import {
 } from './dto/create-blog_post.dto';
 import { UpdateBlogPostDto } from './dto/update-blog_post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ResponseEnum } from 'src/constants/enum';
+import { ResponseEnum, RoleEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
+import { BlogPostStatus } from '@prisma/client';
 
 @Injectable()
 export class BlogPostService {
@@ -63,7 +64,7 @@ export class BlogPostService {
           }),
           this.prismaService.blog_user.findUnique({
             where: {
-              id: createBlogPostDto.authorId,
+              id: req.user.id,
             },
           }),
           this.prismaService.blog_categories.findUnique({
@@ -94,14 +95,18 @@ export class BlogPostService {
           title: createBlogPostDto.title,
           description: createBlogPostDto.description,
           tags: createBlogPostDto.tags,
+          status:
+            req.user.currentRole === RoleEnum.ADMIN
+              ? BlogPostStatus.PUBLISHED
+              : BlogPostStatus.PENDING,
           blog_categories: {
             connect: {
-              id: createBlogPostDto.category_id,
+              id: +createBlogPostDto.category_id,
             },
           },
           blog_user: {
             connect: {
-              id: createBlogPostDto.authorId,
+              id: +req.user.id,
             },
           },
         },
@@ -123,9 +128,15 @@ export class BlogPostService {
     try {
       const isExist = await this.prismaService.blog_post.findUnique({
         where: {
-          id: blog_id,
+          id: +blog_id,
         },
       });
+      console.log(
+        '🚀 ~ BlogPostService ~ isExist:',
+        isExist,
+        typeof req.user.id,
+        typeof blog_id,
+      );
       if (!isExist) {
         return {
           message: ResponseEnum.NOT_FOUND,
@@ -143,7 +154,7 @@ export class BlogPostService {
           },
           blog_post: {
             connect: {
-              id: blog_id,
+              id: +blog_id,
             },
           },
         },
@@ -159,13 +170,65 @@ export class BlogPostService {
 
   async likeDislike(blog_id: number, LikeDislikeDto: LikeDislikeDto, req: any) {
     try {
-      const validLikeDislike =
+      const bothLikeDislikeAtSameTime =
         LikeDislikeDto.like === true && LikeDislikeDto.dislike === true;
-      if (validLikeDislike) {
-        throw new HttpException(
-          "You can't like and dislike the post at the same time",
-          HttpStatus.BAD_REQUEST,
-        );
+      if (bothLikeDislikeAtSameTime) {
+        const existingLikeORDislike =
+          await this.prismaService.blog_like_dislike.findFirst({
+            where: {
+              blog_post_id: blog_id,
+              user_id: req.user.id,
+            },
+          });
+        const recordWithBothFalse =
+          await this.prismaService.blog_like_dislike.findFirst({
+            where: {
+              blog_post_id: blog_id,
+              user_id: req.user.id,
+              like: false,
+              dislike: false,
+            },
+          });
+        if (
+          recordWithBothFalse &&
+          LikeDislikeDto.like === true &&
+          LikeDislikeDto.dislike === true
+        ) {
+        }
+        if (existingLikeORDislike) {
+          switch (true) {
+            case existingLikeORDislike.like === true:
+              await this.prismaService.blog_like_dislike.update({
+                where: {
+                  id: existingLikeORDislike.id,
+                },
+                data: {
+                  like: false,
+                  dislike: LikeDislikeDto.dislike,
+                },
+              });
+              return {
+                message: ResponseEnum.SUCCESS,
+                status: HttpStatus.ACCEPTED,
+                response: 'You remove the like and dislike the post',
+              };
+            case existingLikeORDislike.dislike === true:
+              await this.prismaService.blog_like_dislike.update({
+                where: {
+                  id: existingLikeORDislike.id,
+                },
+                data: {
+                  like: LikeDislikeDto.like,
+                  dislike: false,
+                },
+              });
+              return {
+                message: ResponseEnum.SUCCESS,
+                status: HttpStatus.ACCEPTED,
+                response: 'You remove the dislike and liked the post',
+              };
+          }
+        }
       }
       const [
         isExist_Blog,
@@ -183,7 +246,7 @@ export class BlogPostService {
           where: {
             blog_post_id: blog_id,
             user_id: req.user.id,
-            like: LikeDislikeDto.like == true,
+            like: true,
             dislike: false,
           },
           select: {
@@ -206,10 +269,6 @@ export class BlogPostService {
             like: false,
             dislike: true,
           },
-          select: {
-            id: true,
-            like: true,
-          },
         }),
         this.prismaService.blog_like_dislike.findFirst({
           where: {
@@ -220,44 +279,35 @@ export class BlogPostService {
       ]);
 
       console.log(
-        `🚀 ~ BlogPostService ~         isExist_Blog,
-        isLikeExist,
-        isRemovedLikedPreviously,
-        isDislikeExist,
-        isExistLikeDislikeRecord, `,
-        isLikeExist,
-        isRemovedLikedPreviously,
-        isDislikeExist,
-        isExistLikeDislikeRecord,
+        `isLikeExist ${isLikeExist} isRemovedLikedPreviously ${isRemovedLikedPreviously} isDislikeExist ${isDislikeExist !== null} isExistLikeDislikeRecord ${isExistLikeDislikeRecord !== null} isExist_Blog ${isExist_Blog !== null}`,
       );
 
-      if (isExistLikeDislikeRecord) {
-        await this.prismaService.blog_like_dislike.update({
-          where: {
-            id: isExistLikeDislikeRecord.id,
-          },
-          data: {
-            like: LikeDislikeDto?.like,
-            dislike: LikeDislikeDto?.dislike,
-          },
-        });
-        const responseLikeDislike =
-          LikeDislikeDto.like === true
-            ? 'You Liked The Post'
-            : LikeDislikeDto.dislike === true
-              ? 'you disliked the post'
-              : 'You removed the like and dislike';
-        return {
-          message: ResponseEnum.SUCCESS,
-          status: HttpStatus.CREATED,
-          response: responseLikeDislike,
-        };
-      }
+      console.log(
+        '🚀 ~ BlogPostService ~ likeDislike ~ isRemovedLikedPreviously:',
+        isRemovedLikedPreviously,
+      );
 
       switch (true) {
         case !isExist_Blog:
           throw new HttpException(ResponseEnum.NOT_FOUND, HttpStatus.NOT_FOUND);
-        case isLikeExist && LikeDislikeDto.like === true:
+        case !isExistLikeDislikeRecord:
+          await this.prismaService.blog_like_dislike.create({
+            data: {
+              blog_post_id: blog_id,
+              user_id: req.user.id,
+              like: LikeDislikeDto?.like,
+              dislike: LikeDislikeDto?.dislike,
+            },
+          });
+          return {
+            message: ResponseEnum.SUCCESS,
+            status: HttpStatus.CREATED,
+            response:
+              LikeDislikeDto.like === true
+                ? 'You Liked The Post'
+                : 'You Disliked The Post',
+          };
+        case isLikeExist !== null && LikeDislikeDto.like === true:
           await this.prismaService.blog_like_dislike.update({
             where: {
               id: isLikeExist.id,
@@ -272,36 +322,66 @@ export class BlogPostService {
             response: 'You remove the liked',
           };
         case isLikeExist && LikeDislikeDto.dislike === true:
-          await this.prismaService.blog_like_dislike.update({
-            where: {
-              id: isLikeExist.id,
-            },
-            data: {
-              like: false,
-              dislike: LikeDislikeDto.dislike,
-            },
-          });
-          return {
-            message: ResponseEnum.SUCCESS,
-            status: HttpStatus.CREATED,
-            response: 'You remove the liked and dislike the post',
-          };
+          try {
+            await this.prismaService.blog_like_dislike.update({
+              where: {
+                id: isLikeExist.id,
+              },
+              data: {
+                like: false,
+                dislike: LikeDislikeDto.dislike,
+              },
+            });
+            return {
+              message: ResponseEnum.SUCCESS,
+              status: HttpStatus.CREATED,
+              response: 'You remove the liked and dislike the post',
+            };
+          } catch (err) {
+            throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
 
         case isDislikeExist && LikeDislikeDto.dislike === true:
-          await this.prismaService.blog_like_dislike.update({
-            where: {
-              id: isRemovedLikedPreviously.id,
-            },
-            data: {
-              like: false,
-              dislike: LikeDislikeDto.dislike === true ? false : true,
-            },
-          });
-          return {
-            message: ResponseEnum.SUCCESS,
-            status: HttpStatus.CREATED,
-            response: 'You remove the disliked',
-          };
+          try {
+            await this.prismaService.blog_like_dislike.update({
+              where: {
+                id: isDislikeExist.id,
+              },
+              data: {
+                like: false,
+                dislike: false,
+              },
+            });
+
+            return {
+              message: ResponseEnum.SUCCESS,
+              status: HttpStatus.CREATED,
+              response: 'You remove the disliked',
+            };
+          } catch (err) {
+            throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+
+        case isDislikeExist && LikeDislikeDto.like === true:
+          try {
+            await this.prismaService.blog_like_dislike.update({
+              where: {
+                id: isDislikeExist.id,
+              },
+              data: {
+                like: true,
+                dislike: false,
+              },
+            });
+
+            return {
+              message: ResponseEnum.SUCCESS,
+              status: HttpStatus.CREATED,
+              response: 'You liked the blog post',
+            };
+          } catch (err) {
+            throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
 
         case isDislikeExist && LikeDislikeDto.like === true:
           await this.prismaService.blog_like_dislike.update({
@@ -340,7 +420,110 @@ export class BlogPostService {
                 ? 'You Liked The Post'
                 : 'You Disliked The Post',
           };
+        default:
+          break;
       }
+
+      if (isExistLikeDislikeRecord) {
+        await this.prismaService.blog_like_dislike.update({
+          where: {
+            id: isExistLikeDislikeRecord.id,
+          },
+          data: {
+            like: LikeDislikeDto?.like,
+            dislike: LikeDislikeDto?.dislike,
+          },
+        });
+        const responseLikeDislike =
+          LikeDislikeDto.like === true
+            ? 'You Liked The Post'
+            : LikeDislikeDto.dislike === true
+              ? 'you disliked the post'
+              : 'You removed the like and dislike';
+        return {
+          message: ResponseEnum.SUCCESS,
+          status: HttpStatus.CREATED,
+          response: responseLikeDislike,
+        };
+      }
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async postAndComment() {
+    try {
+      const blogData = await this.prismaService.blog_post.findMany({
+        where: {
+          status: BlogPostStatus.PUBLISHED,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          cover_image: true,
+          tags: true,
+          status: true,
+          blog_user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          blog_categories: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              blog_comment: true,
+            },
+          },
+          blog_like_dislike: {
+            where: {
+              OR: [
+                {
+                  like: true,
+                },
+                {
+                  dislike: true,
+                },
+              ],
+            },
+            select: {
+              id: true,
+              like: true,
+              dislike: true,
+            },
+          },
+          blog_comment: {
+            select: {
+              id: true,
+              comment: true,
+              userId: true,
+              blog_id: true,
+              creaedAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      });
+
+      if (blogData.length === 0) {
+        return {
+          message: ResponseEnum.NOT_FOUND,
+          status: HttpStatus.NOT_FOUND,
+        };
+      }
+
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.OK,
+        data: blogData,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

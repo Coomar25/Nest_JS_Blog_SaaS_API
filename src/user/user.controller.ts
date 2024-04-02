@@ -31,10 +31,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Version('1')
-  @Roles(RoleEnum.USER, RoleEnum.ADMIN)
-  @ApiBearerAuth('JWT')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
@@ -49,8 +46,9 @@ export class UserController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleEnum.USER)
   @Version('1')
+  @Roles(RoleEnum.USER, RoleEnum.ADMIN)
+  @ApiBearerAuth('JWT')
   callUserProfile(@Request() req: any) {
     return this.userService.user_profile(req);
   }

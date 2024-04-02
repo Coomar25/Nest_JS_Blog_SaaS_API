@@ -11,6 +11,7 @@ import {
   Version,
   ParseIntPipe,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { BlogPostService } from './blog_post.service';
 import {
@@ -24,10 +25,14 @@ import { RolesGuard } from 'src/auth/guard/role.guard';
 import { Roles } from 'src/auth/entities/roles.decorator';
 import { RoleEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
+import { BlogBookMarksServices } from './services/blog_bookmarks.service';
 
 @Controller('blog-post')
 export class BlogPostController {
-  constructor(private readonly blogPostService: BlogPostService) {}
+  constructor(
+    private readonly blogPostService: BlogPostService,
+    private readonly blogBookMarksService: BlogBookMarksServices,
+  ) {}
 
   @Post('category')
   @Version('1')
@@ -73,16 +78,36 @@ export class BlogPostController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.USER)
   callBlogComment(
-    @Param('blog_id') blog_id: number,
+    @Param(
+      'blog_id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    blog_id: number,
     @Body() blogCommentDto: BlogCommentDto,
     @Request() req: any,
   ) {
     return this.blogPostService.createBlogComment(blog_id, blogCommentDto, req);
   }
 
-  @Get()
-  findAll() {
-    return this.blogPostService.findAll();
+  @Get('all-blog-post')
+  @Version('1')
+  PostAndComment() {
+    return this.blogPostService.postAndComment();
+  }
+
+  @Post('bookmarks/:blog_id/:user_id')
+  @Version('1')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.USER)
+  callBlogBookmarks(
+    @Param(
+      'blog_id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    blog_id: number,
+    @Body() req: any,
+  ) {
+    return this.blogBookMarksService.blogBoorkmarks(blog_id, req);
   }
 
   @Get(':id')
