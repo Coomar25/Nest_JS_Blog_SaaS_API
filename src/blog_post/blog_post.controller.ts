@@ -13,7 +13,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { BlogPostService } from './blog_post.service';
-import { BlogCatgoryDto, CreateBlogPostDto } from './dto/create-blog_post.dto';
+import {
+  BlogCatgoryDto,
+  BlogCommentDto,
+  CreateBlogPostDto,
+} from './dto/create-blog_post.dto';
 import { UpdateBlogPostDto } from './dto/update-blog_post.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RolesGuard } from 'src/auth/guard/role.guard';
@@ -62,6 +66,18 @@ export class BlogPostController {
     @Request() req: any,
   ) {
     return this.blogPostService.likeDislike(blog_id, likedislikedto, req);
+  }
+
+  @Post('comment/:blog_id')
+  @Version('1')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.USER)
+  callBlogComment(
+    @Param('blog_id') blog_id: number,
+    @Body() blogCommentDto: BlogCommentDto,
+    @Request() req: any,
+  ) {
+    return this.blogPostService.createBlogComment(blog_id, blogCommentDto, req);
   }
 
   @Get()

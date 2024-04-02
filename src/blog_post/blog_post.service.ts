@@ -1,5 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { BlogCatgoryDto, CreateBlogPostDto } from './dto/create-blog_post.dto';
+import {
+  BlogCatgoryDto,
+  BlogCommentDto,
+  CreateBlogPostDto,
+} from './dto/create-blog_post.dto';
 import { UpdateBlogPostDto } from './dto/update-blog_post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseEnum } from 'src/constants/enum';
@@ -109,6 +113,48 @@ export class BlogPostService {
       message: ResponseEnum.SUCCESS,
       status: HttpStatus.CREATED,
     };
+  }
+
+  async createBlogComment(
+    blog_id: number,
+    blogCommentDto: BlogCommentDto,
+    req: any,
+  ) {
+    try {
+      const isExist = await this.prismaService.blog_post.findUnique({
+        where: {
+          id: blog_id,
+        },
+      });
+      if (!isExist) {
+        return {
+          message: ResponseEnum.NOT_FOUND,
+          status: HttpStatus.NOT_FOUND,
+        };
+      }
+
+      await this.prismaService.blog_comment.create({
+        data: {
+          comment: blogCommentDto.comment,
+          blog_user: {
+            connect: {
+              id: req.user.id,
+            },
+          },
+          blog_post: {
+            connect: {
+              id: blog_id,
+            },
+          },
+        },
+      });
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.CREATED,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async likeDislike(blog_id: number, LikeDislikeDto: LikeDislikeDto, req: any) {

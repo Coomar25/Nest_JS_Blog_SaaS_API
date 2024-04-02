@@ -1,3 +1,4 @@
+import { Param } from '@nestjs/common';
 import { BlogPostStatus } from '@prisma/client';
 import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
@@ -40,4 +41,14 @@ export class BlogCatgoryDto {
   @IsArray()
   @IsString({ each: true })
   tags: string[];
+}
+
+export class BlogCommentDto {
+  @IsNotEmpty()
+  @IsString()
+  comment: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  blog_id: number;
 }
