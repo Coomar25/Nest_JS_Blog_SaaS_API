@@ -11,7 +11,6 @@ import {
   Version,
   ParseIntPipe,
   HttpStatus,
-  Query,
 } from '@nestjs/common';
 import { BlogPostService } from './blog_post.service';
 import {
@@ -95,7 +94,7 @@ export class BlogPostController {
     return this.blogPostService.postAndComment();
   }
 
-  @Post('bookmarks/:blog_id/:user_id')
+  @Post('bookmarks/:blog_id')
   @Version('1')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.USER)
@@ -107,7 +106,20 @@ export class BlogPostController {
     blog_id: number,
     @Body() req: any,
   ) {
-    return this.blogBookMarksService.blogBoorkmarks(blog_id, req);
+    console.log('🚀 ~ i am inside the  ~ callBlogBookmarks ~ req:');
+    return this.blogPostService.blogBookmarks(blog_id, req);
+  }
+
+  @Delete('bookmarks/:blog_id')
+  @Version('1')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.USER)
+  callRemoveBlogBookmarks(
+    @Param('blog_id')
+    blog_id: number,
+    @Body() req: any,
+  ) {
+    return this.blogBookMarksService.removeBlogBookmarks(blog_id, req);
   }
 
   @Get(':id')

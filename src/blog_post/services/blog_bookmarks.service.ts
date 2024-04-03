@@ -13,19 +13,23 @@ export class BlogBookMarksServices {
       const isExistBookmarks =
         await this.prismaService.blog_bookmarks.findUnique({
           where: {
-            id: blog_id,
+            id: +blog_id,
           },
         });
       if (isExistBookmarks) {
         throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
       }
 
-      await this.prismaService.blog_bookmarks.create({
+      const createBookmarks = await this.prismaService.blog_bookmarks.create({
         data: {
-          blog_id,
-          user_id: req.user.id,
+          blog_id: +blog_id,
+          user_id: +req.user.id,
         },
       });
+      console.log(
+        '🚀 ~ BlogBookMarksServices ~ blogBoorkmarks ~ createBookmarks:',
+        createBookmarks,
+      );
 
       return {
         message: ResponseEnum.SUCCESS,
@@ -41,7 +45,7 @@ export class BlogBookMarksServices {
       const isExistBookmarks =
         await this.prismaService.blog_bookmarks.findUnique({
           where: {
-            id: blog_id,
+            id: +blog_id,
             user_id: req.user.id,
           },
         });
@@ -52,7 +56,7 @@ export class BlogBookMarksServices {
 
       await this.prismaService.blog_bookmarks.delete({
         where: {
-          id: blog_id,
+          id: +blog_id,
         },
       });
 

@@ -529,6 +529,47 @@ export class BlogPostService {
     }
   }
 
+  async blogBookmarks(blog_id: number, req: any) {
+    try {
+      console.log(
+        '🚀 ~ file: blog_bookmarks.service.ts ~ line 57 ~ BlogBookMarksServices ~ blogBoorkmarks ~ blog_id',
+        blog_id,
+        req.user.id,
+        typeof blog_id,
+        typeof req.user.id,
+      );
+      // const isExistBookmarks = await this.prismaService.blog_bookmarks.findMany(
+      //   {
+      //     where: {
+      //       blog_id: +blog_id,
+      //     },
+      //   },
+      // );
+      // if (isExistBookmarks) {
+      //   throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
+      // }
+
+      const createBookmarks = await this.prismaService.blog_bookmarks.create({
+        data: {
+          blog_id: +blog_id,
+          user_id: +req.user.id,
+        },
+      });
+      console.log(
+        '🚀 ~ BlogBookMarksServices ~ blogBoorkmarks ~ createBookmarks:',
+        createBookmarks,
+      );
+
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.CREATED,
+      };
+    } catch (err) {
+      console.log('🚀 ~ BlogPostService ~ blogBookmarks ~ err:', err);
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   findAll() {
     return `This action returns all blogPost`;
   }
