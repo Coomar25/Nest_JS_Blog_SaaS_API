@@ -1,16 +1,58 @@
-<p>Hey <%= name %>,</p>
-<p>
-  Thanks for signing up for Nice App. We're very excited to have you on board.
-</p>
+<!-- email_template.ejs -->
 
-<p>To get started using Nice App, please confirm your account below:</p>
-<p>
-  <a href="<%= confirmation_url %>">Confirm you account</a>
-</p>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to Nice App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .message {
+        margin-bottom: 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+      .password {
+        background-color: #f0f0f0;
+        padding: 5px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p class="message">Hey <%= name %>,</p>
+      <p class="message">
+        Thanks for signing up for Nice App. We're very excited to have you on
+        board.
+      </p>
 
-<p>
-  If you're having trouble clicking the confirm account button, copy and paste
-  the below URL into your web browser.
-</p>
-
-<a href="<%= confirmation_url %>"><%= confirmation_url %></a>
+      <p class="message">
+        To get started using Nice App, please confirm your account below:
+      </p>
+      <p class="message">
+        Password Here: <span class="password"><%= password %></span>
+      </p>
+    </div>
+  </body>
+</html>

@@ -7,13 +7,20 @@ import { UserSignInDto } from './dto/signin-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { EmailService } from 'src/email/email.service';
+import { random } from 'src/helper/random';
+
 @Injectable()
 export class UserService {
   constructor(
     private prismaService: PrismaService,
     private jwtService: JwtService,
+    private emailSerice: EmailService,
   ) {}
+
   async create(createUserDto: CreateUserDto) {
+    const { randomPassword } = random();
+
     try {
       const isExist = await this.prismaService.blog_user.findUnique({
         where: {
@@ -24,7 +31,7 @@ export class UserService {
         throw new HttpException('user already exist', HttpStatus.CONFLICT);
       }
       const dateofbirth = new Date(createUserDto.dob);
-      const encryptedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const encryptedPassword = await bcrypt.hash(randomPassword(), 10);
 
       const createUser = await this.prismaService.blog_user.create({
         data: {
@@ -41,8 +48,7 @@ export class UserService {
           password: encryptedPassword,
         },
       });
-      console.log('🚀 ~ UserService ~ create ~ createUser:', createUser);
-
+      await this.emailSerice.sendUserWelcome(createUser, randomPassword());
       return {
         message: ResponseEnum.SUCCESS,
         status: HttpStatus.OK,

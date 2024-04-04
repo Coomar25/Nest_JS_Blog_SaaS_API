@@ -21,7 +21,8 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
           from: `"Hello buddy" <${config.get('SMTP_USRNAME')}`,
         },
         template: {
-          dir: join(__dirname, 'templates'),
+          // dir: join(__dirname, 'templates'),
+          dir: join(`${process.cwd()}/src/mail/`, 'templates'),
           adapter: new EjsAdapter(),
           options: {
             strict: false,
