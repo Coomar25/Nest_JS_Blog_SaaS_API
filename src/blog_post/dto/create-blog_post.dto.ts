@@ -54,3 +54,13 @@ export class BlogCommentDto {
   @IsNumber()
   blog_id: number;
 }
+
+export class OrderByDto {
+  @IsNotEmpty()
+  @IsString()
+  asc?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  desc?: string;
+}

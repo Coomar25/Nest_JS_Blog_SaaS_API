@@ -12,12 +12,15 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  Patch,
+  Query,
 } from '@nestjs/common';
 import { BlogPostService } from './blog_post.service';
 import {
   BlogCatgoryDto,
   BlogCommentDto,
   CreateBlogPostDto,
+  OrderByDto,
 } from './dto/create-blog_post.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RolesGuard } from 'src/auth/guard/role.guard';
@@ -27,13 +30,14 @@ import { LikeDislikeDto } from './dto/like-dislike-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BlogBookMarksServices } from './services/blog_bookmarks.service';
 import { FileStorageService } from 'src/file-storage/file-storage.service';
+import { BlogApproveService } from './services/blog_approve.service';
 
 @Controller('blog-post')
 export class BlogPostController {
   constructor(
-    private readonly fileStorageService: FileStorageService,
     private readonly blogPostService: BlogPostService,
     private readonly blogBookMarksService: BlogBookMarksServices,
+    private readonly blogApproveService: BlogApproveService,
   ) {}
 
   @Post('category')
@@ -42,6 +46,47 @@ export class BlogPostController {
   @Roles(RoleEnum.ADMIN, RoleEnum.USER)
   callBlogCategory(@Body() blogCategoryDto: BlogCatgoryDto) {
     return this.blogPostService.createBlogCategory(blogCategoryDto);
+  }
+
+  @Patch('approve')
+  @Version('1')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.ADMIN)
+  callBlogApprove(
+    @Param(
+      'blog_id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    blog_id: number,
+  ) {
+    return this.blogApproveService.approveBlogPost(blog_id);
+  }
+
+  @Get('search')
+  @Version('1')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.ADMIN)
+  callgetFilteredUnapproved(
+    @Param(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    page: number,
+    @Param(
+      'perPage',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    perPage: number,
+    @Query('orderBy') orderBy: OrderByDto,
+    @Query('category') category: string,
+  ) {
+    console.log(page, perPage, category, orderBy);
+    return this.blogApproveService.getFilteredUnapprovedBlog(
+      page,
+      perPage,
+      category,
+      orderBy,
+    );
   }
 
   //simple example of files upload in desired fodlers
@@ -63,7 +108,6 @@ export class BlogPostController {
   //     message: 'File uploaded successfully',
   //   };
   // }
-
   @Post('/uploads')
   @Version('1')
   @UseInterceptors(FileInterceptor('file', new FileStorageService()))

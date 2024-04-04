@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 // import { BlogBookMarksServices } from './services/blog_bookmarks.service';
 import { BlogBookMarksServices } from './services/blog_bookmarks.service';
 import { FileStorageService } from 'src/file-storage/file-storage.service';
+import { BlogApproveService } from './services/blog_approve.service';
 
 @Module({
   controllers: [BlogPostController],
@@ -13,6 +14,7 @@ import { FileStorageService } from 'src/file-storage/file-storage.service';
     BlogBookMarksServices,
     FileStorageService,
     PrismaService,
+    BlogApproveService,
   ],
 })
 export class BlogPostModule {}
