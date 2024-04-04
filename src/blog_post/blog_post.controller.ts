@@ -62,7 +62,7 @@ export class BlogPostController {
     return this.blogApproveService.approveBlogPost(blog_id);
   }
 
-  @Get('search')
+  @Get('search/:page/:perPage')
   @Version('1')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.ADMIN)

@@ -83,13 +83,6 @@ export class BlogApproveService {
               name: category,
             },
           }),
-          //   OR: [
-          //     {
-          //       blog_categories: {
-          //         name: category,
-          //       },
-          //     },
-          //   ],
         },
         orderBy: {
           ...(orderBy &&
@@ -105,11 +98,6 @@ export class BlogApproveService {
               },
             }),
         },
-        // orderBy: {
-        //   blog_categories: {
-        //     name: orderBy,
-        //   },
-        // },
         skip,
         take: perPage,
       });
@@ -120,6 +108,12 @@ export class BlogApproveService {
           status: HttpStatus.NOT_FOUND,
         };
       }
+
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.OK,
+        data: unApprovedBP,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
