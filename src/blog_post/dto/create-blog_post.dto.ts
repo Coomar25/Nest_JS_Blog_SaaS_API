@@ -1,6 +1,5 @@
-import { Param } from '@nestjs/common';
 import { BlogPostStatus } from '@prisma/client';
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateBlogPostDto {
   @IsNotEmpty()
@@ -30,6 +29,9 @@ export class CreateBlogPostDto {
   @IsNotEmpty()
   @IsNumber()
   category_id: number;
+
+  @IsIn(['image/jpeg', 'image/png', 'application/pdf'])
+  file: string;
 }
 
 export class BlogCatgoryDto {

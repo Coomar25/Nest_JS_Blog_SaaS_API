@@ -4,7 +4,6 @@ import {
   BlogCommentDto,
   CreateBlogPostDto,
 } from './dto/create-blog_post.dto';
-import { UpdateBlogPostDto } from './dto/update-blog_post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseEnum, RoleEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
@@ -16,19 +15,11 @@ export class BlogPostService {
 
   async createBlogCategory(blogCategoryDto: BlogCatgoryDto) {
     try {
-      console.log(
-        '🚀 ~ BlogPostService ~ createBlogCategory ~ blogCategoryDto:',
-        blogCategoryDto,
-      );
       const isExist = await this.prismaService.blog_categories.findFirst({
         where: {
           name: blogCategoryDto.name,
         },
       });
-      console.log(
-        '🚀 ~ BlogPostService ~ createBlogCategory ~ isExist:',
-        isExist,
-      );
 
       if (isExist) {
         throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
@@ -52,8 +43,7 @@ export class BlogPostService {
     }
   }
 
-  async create(createBlogPostDto: CreateBlogPostDto, req: any) {
-    console.log('🚀 ~ BlogPostService ~ create ~ req:', req.user);
+  async create(createBlogPostDto: CreateBlogPostDto, req: any, file: any) {
     try {
       const [isExist, isValid_authorId, isValid_categoryId] = await Promise.all(
         [
@@ -64,16 +54,28 @@ export class BlogPostService {
           }),
           this.prismaService.blog_user.findUnique({
             where: {
-              id: req.user.id,
+              id: +req.user.id,
             },
           }),
           this.prismaService.blog_categories.findUnique({
             where: {
-              id: createBlogPostDto.category_id,
+              id: +createBlogPostDto.category_id,
             },
           }),
         ],
       );
+
+      console.log(
+        `type of tags is ${(createBlogPostDto.tags, typeof createBlogPostDto.tags)}`,
+      );
+
+      const checkIfIsArray = Array.isArray(createBlogPostDto.tags);
+      if (!checkIfIsArray) {
+        throw new HttpException(
+          'Tags should be an array',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       if (!isValid_categoryId || !isValid_authorId) {
         const message = !isValid_categoryId
@@ -95,29 +97,31 @@ export class BlogPostService {
           title: createBlogPostDto.title,
           description: createBlogPostDto.description,
           tags: createBlogPostDto.tags,
+          cover_image: file.filename ? file.filename : null,
           status:
             req.user.currentRole === RoleEnum.ADMIN
               ? BlogPostStatus.PUBLISHED
               : BlogPostStatus.PENDING,
           blog_categories: {
             connect: {
-              id: +createBlogPostDto.category_id,
+              id: Number(isValid_categoryId.id),
             },
           },
           blog_user: {
             connect: {
-              id: +req.user.id,
+              id: Number(isValid_authorId.id),
             },
           },
         },
       });
+
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.CREATED,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return {
-      message: ResponseEnum.SUCCESS,
-      status: HttpStatus.CREATED,
-    };
   }
 
   async createBlogComment(
@@ -451,7 +455,7 @@ export class BlogPostService {
     }
   }
 
-  async postAndComment() {
+  async allBlogPost() {
     try {
       const blogData = await this.prismaService.blog_post.findMany({
         where: {
@@ -475,11 +479,6 @@ export class BlogPostService {
             select: {
               id: true,
               name: true,
-            },
-          },
-          _count: {
-            select: {
-              blog_comment: true,
             },
           },
           blog_like_dislike: {
@@ -509,6 +508,18 @@ export class BlogPostService {
               updatedAt: true,
             },
           },
+          _count: {
+            select: {
+              blog_comment: true,
+              blog_bookmarks: true,
+              blog_like_dislike: {
+                where: {
+                  like: true,
+                },
+              },
+              blog_total_viewed_post: true,
+            },
+          },
         },
       });
 
@@ -527,66 +538,5 @@ export class BlogPostService {
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  async blogBookmarks(blog_id: number, req: any) {
-    try {
-      console.log(
-        '🚀 ~ file: blog_bookmarks.service.ts ~ line 57 ~ BlogBookMarksServices ~ blogBoorkmarks ~ blog_id',
-        blog_id,
-        req.user.id,
-        typeof blog_id,
-        typeof req.user.id,
-      );
-      // const isExistBookmarks = await this.prismaService.blog_bookmarks.findMany(
-      //   {
-      //     where: {
-      //       blog_id: +blog_id,
-      //     },
-      //   },
-      // );
-      // if (isExistBookmarks) {
-      //   throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
-      // }
-
-      const createBookmarks = await this.prismaService.blog_bookmarks.create({
-        data: {
-          blog_id: +blog_id,
-          user_id: +req.user.id,
-        },
-      });
-      console.log(
-        '🚀 ~ BlogBookMarksServices ~ blogBoorkmarks ~ createBookmarks:',
-        createBookmarks,
-      );
-
-      return {
-        message: ResponseEnum.SUCCESS,
-        status: HttpStatus.CREATED,
-      };
-    } catch (err) {
-      console.log('🚀 ~ BlogPostService ~ blogBookmarks ~ err:', err);
-      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  findAll() {
-    return `This action returns all blogPost`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} blogPost`;
-  }
-
-  update(id: number, updateBlogPostDto: UpdateBlogPostDto) {
-    console.log(
-      '🚀 ~ BlogPostService ~ update ~ updateBlogPostDto:',
-      updateBlogPostDto,
-    );
-    return `This action updates a #${id} blogPost`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} blogPost`;
   }
 }

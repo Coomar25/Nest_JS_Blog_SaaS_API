@@ -14,26 +14,63 @@ export class BlogBookMarksServices {
         await this.prismaService.blog_bookmarks.findUnique({
           where: {
             id: +blog_id,
+            user_id: +req.user.id,
           },
         });
       if (isExistBookmarks) {
         throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
       }
 
-      const createBookmarks = await this.prismaService.blog_bookmarks.create({
+      await this.prismaService.blog_bookmarks.create({
         data: {
           blog_id: +blog_id,
           user_id: +req.user.id,
         },
       });
-      console.log(
-        '🚀 ~ BlogBookMarksServices ~ blogBoorkmarks ~ createBookmarks:',
-        createBookmarks,
-      );
 
       return {
         message: ResponseEnum.SUCCESS,
         status: HttpStatus.CREATED,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getSingleUsrBlogBookmarks(req: any) {
+    try {
+      const checkIsBMExists = await this.prismaService.blog_bookmarks.findMany({
+        where: {
+          user_id: +req.user.id,
+        },
+        select: {
+          blog_post: {
+            include: {
+              _count: {
+                select: {
+                  blog_bookmarks: true,
+                  blog_like_dislike: {
+                    where: {
+                      like: true,
+                    },
+                  },
+                  blog_comment: true,
+                  blog_total_viewed_post: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!checkIsBMExists) {
+        throw new HttpException(ResponseEnum.NOT_FOUND, HttpStatus.NOT_FOUND);
+      }
+
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.OK,
+        data: checkIsBMExists,
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -46,7 +83,7 @@ export class BlogBookMarksServices {
         await this.prismaService.blog_bookmarks.findUnique({
           where: {
             id: +blog_id,
-            user_id: req.user.id,
+            user_id: +req.user.id,
           },
         });
 
@@ -57,6 +94,7 @@ export class BlogBookMarksServices {
       await this.prismaService.blog_bookmarks.delete({
         where: {
           id: +blog_id,
+          user_id: +req.user.id,
         },
       });
 

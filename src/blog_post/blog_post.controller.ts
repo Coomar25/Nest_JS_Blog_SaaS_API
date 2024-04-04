@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
@@ -11,6 +10,8 @@ import {
   Version,
   ParseIntPipe,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { BlogPostService } from './blog_post.service';
 import {
@@ -18,17 +19,19 @@ import {
   BlogCommentDto,
   CreateBlogPostDto,
 } from './dto/create-blog_post.dto';
-import { UpdateBlogPostDto } from './dto/update-blog_post.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RolesGuard } from 'src/auth/guard/role.guard';
 import { Roles } from 'src/auth/entities/roles.decorator';
 import { RoleEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { BlogBookMarksServices } from './services/blog_bookmarks.service';
+import { FileStorageService } from 'src/file-storage/file-storage.service';
 
 @Controller('blog-post')
 export class BlogPostController {
   constructor(
+    private readonly fileStorageService: FileStorageService,
     private readonly blogPostService: BlogPostService,
     private readonly blogBookMarksService: BlogBookMarksServices,
   ) {}
@@ -39,6 +42,36 @@ export class BlogPostController {
   @Roles(RoleEnum.ADMIN, RoleEnum.USER)
   callBlogCategory(@Body() blogCategoryDto: BlogCatgoryDto) {
     return this.blogPostService.createBlogCategory(blogCategoryDto);
+  }
+
+  //simple example of files upload in desired fodlers
+  // @Post('/uploads')
+  // @Version('1')
+  // @UseInterceptors(
+  //   FileInterceptor('file', {
+  //     storage: diskStorage({
+  //       destination: './uploads',
+  //       filename: (req, file, cb) => {
+  //         cb(null, `${file.originalname}`);
+  //       },
+  //     }),
+  //   }),
+  // )
+  // async uploadFile(@UploadedFile() file: any) {
+  //   console.log(file);
+  //   return {
+  //     message: 'File uploaded successfully',
+  //   };
+  // }
+
+  @Post('/uploads')
+  @Version('1')
+  @UseInterceptors(FileInterceptor('file', new FileStorageService()))
+  async uploadFile(@UploadedFile() file: any) {
+    console.log(file);
+    return {
+      message: 'File uploaded successfully',
+    };
   }
 
   /**
@@ -52,8 +85,15 @@ export class BlogPostController {
   @Version('1')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.ADMIN, RoleEnum.USER)
-  create(@Body() createBlogPostDto: CreateBlogPostDto, @Request() req: any) {
-    return this.blogPostService.create(createBlogPostDto, req);
+  @UseInterceptors(FileInterceptor('file', new FileStorageService()))
+  callCreateBlog(
+    @Body() createBlogPostDto: CreateBlogPostDto,
+    @Request() req: any,
+    @UploadedFile()
+    file: any,
+  ) {
+    console.log('🚀 ~ BlogPostController ~ file:', file);
+    return this.blogPostService.create(createBlogPostDto, req, file);
   }
 
   @Post('likedislike/:blog_id')
@@ -90,8 +130,8 @@ export class BlogPostController {
 
   @Get('all-blog-post')
   @Version('1')
-  PostAndComment() {
-    return this.blogPostService.postAndComment();
+  callallBlogPosts() {
+    return this.blogPostService.allBlogPost();
   }
 
   @Post('bookmarks/:blog_id')
@@ -104,10 +144,17 @@ export class BlogPostController {
       new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
     )
     blog_id: number,
-    @Body() req: any,
+    @Request() req: any,
   ) {
-    console.log('🚀 ~ i am inside the  ~ callBlogBookmarks ~ req:');
-    return this.blogPostService.blogBookmarks(blog_id, req);
+    return this.blogBookMarksService.blogBoorkmarks(blog_id, req);
+  }
+
+  @Get('user/get-bookmarks')
+  @Version('1')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.USER)
+  callSingleUserBM(@Request() req: any) {
+    return this.blogBookMarksService.getSingleUsrBlogBookmarks(req);
   }
 
   @Delete('bookmarks/:blog_id')
@@ -115,28 +162,15 @@ export class BlogPostController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.USER)
   callRemoveBlogBookmarks(
-    @Param('blog_id')
+    @Param(
+      'blog_id',
+      new ParseIntPipe({
+        errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      }),
+    )
     blog_id: number,
-    @Body() req: any,
+    @Request() req: any,
   ) {
     return this.blogBookMarksService.removeBlogBookmarks(blog_id, req);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.blogPostService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateBlogPostDto: UpdateBlogPostDto,
-  ) {
-    return this.blogPostService.update(+id, updateBlogPostDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.blogPostService.remove(+id);
   }
 }
