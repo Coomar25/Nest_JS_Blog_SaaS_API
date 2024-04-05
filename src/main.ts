@@ -3,6 +3,7 @@ import { AppModule } from './app/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { VERSION_NEUTRAL, VersioningType } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,7 @@ async function bootstrap() {
     defaultVersion: VERSION_NEUTRAL,
   });
   app.use(cookieParser());
+  app.useWebSocketAdapter(new IoAdapter());
   const config = new DocumentBuilder()
     .setTitle('Cats example')
     .setDescription('The cats API description')

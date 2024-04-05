@@ -8,6 +8,7 @@ import { BlogPostModule } from 'src/blog_post/blog_post.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
+import { SocketGateway } from 'src/socket/socket.gateway';
 
 @Module({
   imports: [
@@ -25,6 +26,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SocketGateway],
 })
 export class AppModule {}
