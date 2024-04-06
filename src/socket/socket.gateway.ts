@@ -1,39 +1,43 @@
 import { UseGuards } from '@nestjs/common';
 import {
+  ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { JwtSocketGuard } from 'src/auth/guard/socket.guard';
 @UseGuards(JwtSocketGuard)
 @WebSocketGateway(5000)
 export class SocketGateway {
   @WebSocketServer() server: Server;
 
-  //   async handleConnection(client: Socket): Promise<void> {
-  //     const token = client.handshake.query.token as string;
-  //     try {
-  //       const decodedToken = Jwt.verify(token, configCredentials.JWTSECRET);
-  //       console.log(
-  //         '🚀 ~ SocketGateway ~ handleConnection ~ decodedToken:',
-  //         decodedToken.user,
-  //       );
-  //     } catch (err) {
-  //       console.log(`Error verifying token:`, error);
-  //       client.disconnect(true);
-  //     }
-  //   }
+  private connectedClients = new Map<string, Set<Socket>>();
+
+  handleConnection(@ConnectedSocket() client: Socket) {
+    // Initialize the client's private room
+    console.log(
+      '🚀 ~ SocketGateway ~ handleConnection ~ client.id:',
+      client.id,
+    );
+
+    this.connectedClients.set(client.id, new Set());
+  }
 
   @SubscribeMessage('events')
-  handleEvent(@MessageBody() data: any): string {
-    return data;
+  handleEvent(@MessageBody('id') id: number): number {
+    console.log('🚀 ~ SocketGateway ~ handleEvent ~ id:', id);
+    return id;
   }
 
   @SubscribeMessage('message')
   handleMessage(@MessageBody() message: string): void {
     console.log('🚀 ~ SocketGateway ~ handleMessage ~ message:', message);
     this.server.emit('messages', message);
+  }
+
+  handleDisconnect(@ConnectedSocket() client: Socket) {
+    this.connectedClients.delete(client.id);
   }
 }
