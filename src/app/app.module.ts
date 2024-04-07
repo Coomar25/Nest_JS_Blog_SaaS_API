@@ -9,6 +9,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { SocketGateway } from 'src/socket/socket.gateway';
+import { LoggerModule } from 'utils/logger.module';
 
 @Module({
   imports: [
@@ -21,9 +22,12 @@ import { SocketGateway } from 'src/socket/socket.gateway';
       rootPath: join(__dirname, '..', '/uploads'),
       serveRoot: 'uploads',
     }),
+    //for env credentials
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    // Registering the Logger Module in app
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [AppService, SocketGateway],

@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  LoggerService,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseEnum, RoleEnum } from 'src/constants/enum';
@@ -9,6 +15,8 @@ import { Response } from 'express';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { EmailService } from 'src/email/email.service';
 import { random } from 'src/helper/random';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class UserService {
@@ -16,11 +24,10 @@ export class UserService {
     private prismaService: PrismaService,
     private jwtService: JwtService,
     private emailSerice: EmailService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { randomPassword } = random();
-
     try {
       const isExist = await this.prismaService.blog_user.findUnique({
         where: {
@@ -30,6 +37,7 @@ export class UserService {
       if (isExist) {
         throw new HttpException('user already exist', HttpStatus.CONFLICT);
       }
+      const { randomPassword } = random();
       const dateofbirth = new Date(createUserDto.dob);
       const encryptedPassword = await bcrypt.hash(randomPassword(), 10);
 
@@ -64,6 +72,7 @@ export class UserService {
 
   async user_signin(UserSignInDto: UserSignInDto, response: Response) {
     try {
+      this.logger.info(`${UserSignInDto.email} is trying to signin`);
       const isExist = await this.prismaService.blog_user.findUnique({
         where: {
           email: UserSignInDto.email,

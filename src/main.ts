@@ -4,9 +4,12 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { VERSION_NEUTRAL, VersioningType } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { CustomLogger } from 'utils/logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new CustomLogger(),
+  });
   //swagger
   app.enableVersioning({
     type: VersioningType.URI,

@@ -14,7 +14,6 @@ export class SocketGateway {
   @WebSocketServer() server: Server;
 
   private connectedClients = new Map<string, Set<Socket>>();
-
   handleConnection(@ConnectedSocket() client: Socket) {
     // Initialize the client's private room
     console.log(
