@@ -31,14 +31,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     // status?: any,
   ): TUser {
     if (err || !user) {
+      console.log(
+        '🚀 ~ After token validation failed err occured here and unauthorized here:',
+        err,
+      );
+
       throw err || new UnauthorizedException();
     }
-    console.log(
-      '🚀 ~ JwtAuthGuard ~ classJwtAuthGuardextendsAuthGuard ~ user:',
-      user,
-    );
 
     if (user.id) {
+      console.log('🚀 ~ After token validation success here ~ user:', user);
       return user;
     }
     throw err || new UnauthorizedException();
