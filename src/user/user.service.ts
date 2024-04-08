@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  LoggerService,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseEnum, RoleEnum } from 'src/constants/enum';
@@ -91,24 +85,29 @@ export class UserService {
         isExist.password,
       );
 
-      if (PasswordIsMatch) {
-        const access_token = await this.jwtService.sign({
-          id: isExist.id,
-          role: RoleEnum.USER,
-        });
-
-        response.cookie('access_token', access_token, {
-          httpOnly: true,
-          secure: true,
-        });
-
-        return {
-          message: ResponseEnum.SUCCESS,
-          access: access_token,
-        };
-      } else {
+      if (!PasswordIsMatch) {
+        this.logger.error(
+          `${UserSignInDto.email} is trying to login with wrong password`,
+        );
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
+
+      const access_token = await this.jwtService.sign({
+        id: isExist.id,
+        role: RoleEnum.USER,
+      });
+
+      response.cookie('access_token', access_token, {
+        httpOnly: true,
+        secure: true,
+      });
+      this.logger.info({
+        message: ` login ${ResponseEnum.SUCCESS} by ${UserSignInDto.email}`,
+      });
+      return {
+        message: ResponseEnum.SUCCESS,
+        access: access_token,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -20,10 +20,7 @@ export class JwtSocketGuard extends AuthGuard('jwt-socket') {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>();
     const token: string | string[] = client.handshake.query.token;
-    console.log(
-      '🚀 ~ JwtSocketGuard ~ classJwtSocketGuardextendsAuthGuard ~ context, token:',
-      context,
-    ); //Extract the token from query
+    //Extract the token from query
 
     if (token === undefined) {
       throw new HttpException(
