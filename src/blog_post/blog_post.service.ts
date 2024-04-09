@@ -174,9 +174,7 @@ export class BlogPostService {
 
   async likeDislike(blog_id: number, LikeDislikeDto: LikeDislikeDto, req: any) {
     try {
-      const bothLikeDislikeAtSameTime =
-        LikeDislikeDto.like === true && LikeDislikeDto.dislike === true;
-      if (bothLikeDislikeAtSameTime) {
+      if (LikeDislikeDto.like === true && LikeDislikeDto.dislike === true) {
         const existingLikeORDislike =
           await this.prismaService.blog_like_dislike.findFirst({
             where: {

@@ -41,6 +41,7 @@ export class SocketGateway {
     @MessageBody() message: LiveBlog,
   ) {
     const parsedMessage: LiveBlog = JSON.parse(`${message}`);
+    const roomName = `blog-${message.blog_id}`;
     if (!this.blogClients.has(client.id)) {
       this.blogClients.set(client.id, parsedMessage.blog_id);
     }
@@ -49,11 +50,13 @@ export class SocketGateway {
     const filteredValues = allBlogClientsValues.filter((blog_id) => {
       return blog_id === parsedMessage.blog_id;
     });
-    this.server.emit('liveCountsSingleBlog', filteredValues.length);
+    this.server
+      .to(roomName)
+      .emit('liveCountsSingleBlog', filteredValues.length);
   }
 
-  @SubscribeMessage('joinBlogCommentRoom')
-  handleJoinBlogCommentRoom(
+  @SubscribeMessage('joinBlogRoom')
+  handleJoinBlogRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: LiveBlog,
   ) {
