@@ -31,6 +31,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { BlogBookMarksServices } from './services/blog_bookmarks.service';
 import { FileStorageService } from 'src/file-storage/file-storage.service';
 import { BlogApproveService } from './services/blog_approve.service';
+import { SubscribeBlogRequest } from './entities/blog_post.entity';
+import { BlogSubscribeLetter } from './services/blog_subscribe_letter.service';
 
 @Controller('blog-post')
 export class BlogPostController {
@@ -38,6 +40,7 @@ export class BlogPostController {
     private readonly blogPostService: BlogPostService,
     private readonly blogBookMarksService: BlogBookMarksServices,
     private readonly blogApproveService: BlogApproveService,
+    private readonly blogSubscriveLetter: BlogSubscribeLetter,
   ) {}
 
   @Post('category')
@@ -216,5 +219,11 @@ export class BlogPostController {
     @Request() req: any,
   ) {
     return this.blogBookMarksService.removeBlogBookmarks(blog_id, req);
+  }
+
+  @Post('subscribe')
+  @Version('1')
+  callSubscribeBlog(@Request() req: SubscribeBlogRequest) {
+    return this.blogSubscriveLetter.createBlogSubscribeLetter(req);
   }
 }

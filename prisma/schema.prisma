@@ -31,6 +31,7 @@ model blog_user {
   blog_total_viewed_post blog_total_viewed_post[]
   blog_bookmarks         blog_bookmarks[]
   blog_like_dislike      blog_like_dislike[]
+  blog_subscribe_letter  blog_subscribe_letter[]
 }
 
 enum BlogPostStatus {
@@ -109,4 +110,11 @@ model blog_total_viewed_post {
   isViewed  Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+model blog_subscribe_letter {
+  id        Int       @id @default(autoincrement())
+  email     String
+  user_id   Int
+  blog_user blog_user @relation(fields: [user_id], references: [id])
 }
