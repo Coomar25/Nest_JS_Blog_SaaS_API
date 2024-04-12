@@ -6,7 +6,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
   Version,
   ParseIntPipe,
   HttpStatus,
@@ -14,6 +13,7 @@ import {
   UploadedFile,
   Patch,
   Query,
+  Request,
 } from '@nestjs/common';
 import { BlogPostService } from './blog_post.service';
 import {
@@ -33,6 +33,8 @@ import { FileStorageService } from 'src/file-storage/file-storage.service';
 import { BlogApproveService } from './services/blog_approve.service';
 import { SubscribeBlogRequest } from './entities/blog_post.entity';
 import { BlogSubscribeLetter } from './services/blog_subscribe_letter.service';
+import { ParsePositiveIntPipe } from './pipes/positive-integer-parse-pipe';
+import { UpdateBlogCategoryDto } from './dto/update-blog_post.dto';
 
 @Controller('blog-post')
 export class BlogPostController {
@@ -51,7 +53,23 @@ export class BlogPostController {
     return this.blogPostService.createBlogCategory(blogCategoryDto);
   }
 
-  @Patch('approve')
+  @Patch('category/:blog_id')
+  @Version('1')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.ADMIN)
+  callUpdateCategory(
+    @Param(
+      'blog_id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    blog_id: number,
+    @Request() req: any,
+    @Body() updateCategory: UpdateBlogCategoryDto,
+  ) {
+    return this.blogPostService.updateBlogCategory(blog_id, updateCategory);
+  }
+
+  @Patch('approve/:blog_id')
   @Version('1')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.ADMIN)
@@ -59,6 +77,7 @@ export class BlogPostController {
     @Param(
       'blog_id',
       new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+      ParsePositiveIntPipe,
     )
     blog_id: number,
   ) {

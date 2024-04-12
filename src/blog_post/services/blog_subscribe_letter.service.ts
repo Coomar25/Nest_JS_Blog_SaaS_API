@@ -41,7 +41,7 @@ export class BlogSubscribeLetter {
     }
   }
 
-  async blogUnsubscribeLetter(req: Request) {
+  async blogUnsubscribeLetter(req: SubscribeBlogRequest) {
     try {
       const isExistSubscribeLetter =
         await this.prismaService.blog_subscribe_letter.findFirst({

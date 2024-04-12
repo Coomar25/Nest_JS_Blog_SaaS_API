@@ -8,6 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseEnum, RoleEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
 import { BlogPostStatus } from '@prisma/client';
+import { UpdateBlogCategoryDto } from './dto/update-blog_post.dto';
 
 @Injectable()
 export class BlogPostService {
@@ -40,6 +41,47 @@ export class BlogPostService {
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateBlogCategory(
+    blog_id: number,
+    updateCategory: UpdateBlogCategoryDto,
+  ) {
+    try {
+      const isExist_Blog = await this.prismaService.blog_categories.findUnique({
+        where: {
+          id: blog_id,
+        },
+      });
+      if (!isExist_Blog) {
+        return {
+          message: ResponseEnum.NOT_FOUND,
+          status: HttpStatus.NOT_FOUND,
+        };
+      }
+
+      await this.prismaService.blog_categories.update({
+        where: {
+          id: +blog_id,
+        },
+        data: {
+          name: updateCategory.name,
+          tags: {
+            set: updateCategory.tags,
+          },
+        },
+      });
+
+      return {
+        message: ResponseEnum.SUCCESS,
+        status: HttpStatus.OK,
+      };
+    } catch (err) {
+      throw new HttpException(
+        ResponseEnum.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -196,6 +238,10 @@ export class BlogPostService {
           LikeDislikeDto.like === true &&
           LikeDislikeDto.dislike === true
         ) {
+          return {
+            message: "You can't like and dislike the post at the same time",
+            status: HttpStatus.NOT_ACCEPTABLE,
+          };
         }
         if (existingLikeORDislike) {
           switch (true) {
