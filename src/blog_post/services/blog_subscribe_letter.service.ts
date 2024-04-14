@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ResponseEnum } from 'src/constants/enum';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SubscribeBlogDto } from '../dto/create-blog_post.dto';
 
 interface SubscribeBlogRequest {
   user_id: number;
@@ -11,11 +12,11 @@ interface SubscribeBlogRequest {
 export class BlogSubscribeLetter {
   constructor(private prismaService: PrismaService) {}
 
-  async createBlogSubscribeLetter(req: SubscribeBlogRequest) {
-    try {
+  async createBlogSubscribeLetter(subscribeDto: SubscribeBlogDto) {
+      console.log("🚀 ~ BlogSubscribeLetter ~ createBlogSubscribeLetter ~ subscribeDto:", subscribeDto.email, subscribeDto.userId)
       const isExist = await this.prismaService.blog_user.findUnique({
         where: {
-          id: req.user_id,
+          id: subscribeDto.userId,
         },
       });
 
@@ -24,8 +25,8 @@ export class BlogSubscribeLetter {
       }
       await this.prismaService.blog_subscribe_letter.create({
         data: {
-          email: req.email,
-          user_id: req.user_id,
+          email: subscribeDto.email,
+          user_id: subscribeDto.userId,
         },
       });
 
@@ -33,12 +34,6 @@ export class BlogSubscribeLetter {
         message: ResponseEnum.SUCCESS,
         status: HttpStatus.ACCEPTED,
       };
-    } catch (err) {
-      throw new HttpException(
-        `${err} ${ResponseEnum.INTERNAL_SERVER_ERROR} `,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
   }
 
   async blogUnsubscribeLetter(req: SubscribeBlogRequest) {

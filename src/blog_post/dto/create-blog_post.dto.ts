@@ -1,5 +1,5 @@
 import { BlogPostStatus } from '@prisma/client';
-import { IsArray, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsEmail, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateBlogPostDto {
   @IsNotEmpty()
@@ -63,4 +63,16 @@ export class OrderByDto {
   @IsNotEmpty()
   @IsString()
   desc?: string;
+}
+
+export class SubscribeBlogDto {
+  @IsNotEmpty()
+  @IsString()
+  userId: number
+
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  email: string
+  user_id: any;
 }

@@ -21,6 +21,7 @@ import {
   BlogCommentDto,
   CreateBlogPostDto,
   OrderByDto,
+  SubscribeBlogDto,
 } from './dto/create-blog_post.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RolesGuard } from 'src/auth/guard/role.guard';
@@ -242,7 +243,8 @@ export class BlogPostController {
 
   @Post('subscribe')
   @Version('1')
-  callSubscribeBlog(@Request() req: SubscribeBlogRequest) {
-    return this.blogSubscriveLetter.createBlogSubscribeLetter(req);
+  callSubscribeBlog(@Body() subscribeDto: SubscribeBlogDto ) {
+    console.log("🚀 ~ BlogPostController ~ callSubscribeBlog ~ subscribeDto:", subscribeDto)
+    return this.blogSubscriveLetter.createBlogSubscribeLetter(subscribeDto);
   }
 }
