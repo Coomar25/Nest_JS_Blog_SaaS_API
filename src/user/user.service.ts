@@ -32,8 +32,10 @@ export class UserService {
         throw new HttpException('user already exist', HttpStatus.CONFLICT);
       }
       const { randomPassword } = random();
+      const non_encryptedPassword = randomPassword()
+      console.log("🚀 ~ UserService ~ create ~ non_encryptedPassword:", non_encryptedPassword)
       const dateofbirth = new Date(createUserDto.dob);
-      const encryptedPassword = await bcrypt.hash(randomPassword(), 10);
+      const encryptedPassword = await bcrypt.hash(non_encryptedPassword, 10);
 
       const createUser = await this.prismaService.blog_user.create({
         data: {
@@ -50,7 +52,7 @@ export class UserService {
           password: encryptedPassword,
         },
       });
-      await this.emailSerice.sendUserWelcome(createUser, randomPassword());
+      await this.emailSerice.sendUserWelcome(createUser, non_encryptedPassword);
       return {
         message: ResponseEnum.SUCCESS,
         status: HttpStatus.OK,
@@ -84,6 +86,7 @@ export class UserService {
         UserSignInDto.password,
         isExist.password,
       );
+      console.log("🚀 ~ UserService ~ user_signin ~ PasswordIsMatch:", PasswordIsMatch)
 
       if (!PasswordIsMatch) {
         this.logger.error(
