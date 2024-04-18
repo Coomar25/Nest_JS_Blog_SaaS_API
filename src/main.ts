@@ -25,14 +25,18 @@ async function bootstrap() {
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
-      name: 'Authorization',
-      bearerFormat: 'Bearer',
-      description: 'Enter JWT token',
-      in: 'header',
-    })
+      description: 'Enter your JWT token',
+    }, 'jwt')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    explorer: true,
+    customSiteTitle: 'Nest JS Role Based Auth API',
+    customfavIcon: 'https://www.google.com/favicon.ico',
+    swaggerOptions: {
+      persistAuthrization: true
+    }
+  });
   await app.listen(3000);
 }
 bootstrap();

@@ -22,10 +22,12 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RolesGuard } from 'src/auth/guard/role.guard';
 import { Roles } from 'src/auth/entities/roles.decorator';
 import { RoleEnum } from 'src/constants/enum';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+@ApiTags("User")
+@ApiBearerAuth('jwt')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}

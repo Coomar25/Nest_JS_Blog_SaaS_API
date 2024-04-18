@@ -36,7 +36,9 @@ import { SubscribeBlogRequest } from './entities/blog_post.entity';
 import { BlogSubscribeLetter } from './services/blog_subscribe_letter.service';
 import { ParsePositiveIntPipe } from './pipes/positive-integer-parse-pipe';
 import { UpdateBlogCategoryDto } from './dto/update-blog_post.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags("Blog-Posts")
 @Controller('blog-post')
 export class BlogPostController {
   constructor(
