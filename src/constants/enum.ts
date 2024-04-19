@@ -1,9 +1,6 @@
 export enum RoleEnum {
   ADMIN = 'Admin',
   USER = 'User',
-  SCHOOL = 'School',
-  STUDENT = 'Student',
-  EMPLLOYEE = 'Employee',
 }
 
 export enum ResponseEnum {

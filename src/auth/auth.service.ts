@@ -1,9 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { random } from 'src/helper/random';
+import { JwtService } from '@nestjs/jwt';
+import { RoleEnum } from 'src/constants/enum';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    private prismaService: PrismaService,
+    private jwtService: JwtService,
+  ) {}
+
   create(createAuthDto: CreateAuthDto) {
     console.log('🚀 ~ AuthService ~ create ~ createAuthDto:', createAuthDto);
     return 'This action adds a new auth';
@@ -15,7 +24,37 @@ export class AuthService {
         message: 'No user from google',
       };
     }
-    return req.user;
+    const checkIsExist = await this.prismaService.blog_user.findUnique({
+      where: {
+        google_id: req.user.id,
+        email: req.user.emails[0].value,
+      },
+    });
+
+    const randomPassword = random().randomPassword();
+    console.log(
+      '🚀 ~ AuthService ~ googleLogin ~ randomPassword:',
+      randomPassword,
+    );
+    let createGoogleUser;
+    if (!checkIsExist) {
+      createGoogleUser = await this.prismaService.blog_user.create({
+        data: {
+          google_id: req.user.id,
+          email: req.user._json.email,
+          name: req.user._json.name,
+          password: 'google',
+          user_profile: req.user._json.picture,
+        },
+      });
+    }
+
+    const access_token = await this.jwtService.sign({
+      id: checkIsExist ? checkIsExist.id : createGoogleUser.id,
+      role: RoleEnum.USER,
+    });
+
+    return access_token;
   }
 
   findAll() {

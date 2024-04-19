@@ -15,17 +15,18 @@ datasource db {
 
 model blog_user {
   id                     Int                      @id @default(autoincrement())
+  google_id              Int?                     @unique
   email                  String                   @unique
   name                   String
   password               String
-  address                String
-  contact                String
+  address                String?
+  contact                String?
   user_profile           String?                  @default("assets/defaults/default_image.png")
-  city                   String
-  country                String
-  dob                    String
+  city                   String?
+  country                String?
+  dob                    String?
   postal                 String?                  @default("")
-  state                  String                   @default("")
+  state                  String?                  @default("")
   blogpost               blog_post[]
   blog_comment           blog_comment[]
   blog_total_viewed_post blog_total_viewed_post[]

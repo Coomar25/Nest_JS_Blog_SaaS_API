@@ -32,8 +32,11 @@ export class UserService {
         throw new HttpException('user already exist', HttpStatus.CONFLICT);
       }
       const { randomPassword } = random();
-      const non_encryptedPassword = randomPassword()
-      console.log("🚀 ~ UserService ~ create ~ non_encryptedPassword:", non_encryptedPassword)
+      const non_encryptedPassword = randomPassword();
+      console.log(
+        '🚀 ~ UserService ~ create ~ non_encryptedPassword:',
+        non_encryptedPassword,
+      );
       const dateofbirth = new Date(createUserDto.dob);
       const encryptedPassword = await bcrypt.hash(non_encryptedPassword, 10);
 
@@ -86,7 +89,10 @@ export class UserService {
         UserSignInDto.password,
         isExist.password,
       );
-      console.log("🚀 ~ UserService ~ user_signin ~ PasswordIsMatch:", PasswordIsMatch)
+      console.log(
+        '🚀 ~ UserService ~ user_signin ~ PasswordIsMatch:',
+        PasswordIsMatch,
+      );
 
       if (!PasswordIsMatch) {
         this.logger.error(
