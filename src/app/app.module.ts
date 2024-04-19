@@ -10,6 +10,7 @@ import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { LoggerModule } from 'utils/logger.module';
+import { GoogleStrategy } from 'src/auth/strategy/goole.strategy';
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { LoggerModule } from 'utils/logger.module';
     LoggerModule,
   ],
   controllers: [AppController],
-  providers: [AppService, SocketGateway],
+  providers: [AppService, SocketGateway, GoogleStrategy],
 })
 export class AppModule {}

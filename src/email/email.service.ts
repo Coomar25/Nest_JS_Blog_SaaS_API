@@ -6,7 +6,6 @@ import { User } from 'src/user/entities/user.entity';
 export class EmailService {
   constructor(private mailerService: MailerService) {}
   async sendUserWelcome(user: User, password: string) {
-    console.log("🚀 ~ EmailService ~ sendUserWelcome ~ password:", password)
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Welcome to Nice app! Buddy',

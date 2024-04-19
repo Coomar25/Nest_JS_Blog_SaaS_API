@@ -9,6 +9,7 @@ import { ResponseEnum, RoleEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
 import { BlogPostStatus } from '@prisma/client';
 import { UpdateBlogCategoryDto } from './dto/update-blog_post.dto';
+import { BlogEntity } from './entities/blog.entity';
 
 @Injectable()
 export class BlogPostService {
@@ -85,7 +86,7 @@ export class BlogPostService {
     }
   }
 
-  async create(createBlogPostDto: CreateBlogPostDto, req: any, file: any) {
+  async create(createBlogPostDto: CreateBlogPostDto, req: any, file: any): Promise<BlogEntity> {
     try {
       const [isExist, isValid_authorId, isValid_categoryId] = await Promise.all(
         [
@@ -133,7 +134,7 @@ export class BlogPostService {
         throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
       }
 
-      await this.prismaService.blog_post.create({
+      return await this.prismaService.blog_post.create({
         data: {
           slug: createBlogPostDto.slug,
           title: createBlogPostDto.title,
@@ -157,10 +158,7 @@ export class BlogPostService {
         },
       });
 
-      return {
-        message: ResponseEnum.SUCCESS,
-        status: HttpStatus.CREATED,
-      };
+   
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

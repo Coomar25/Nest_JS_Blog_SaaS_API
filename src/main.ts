@@ -7,9 +7,13 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { CustomLogger } from 'utils/logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: new CustomLogger(),
-  });
+  const app = await NestFactory.create(
+    AppModule,
+    // the console shows the logs from the CustomLogger
+    //    {
+    //   logger: new CustomLogger(),
+    // }
+  );
   //swagger
   app.enableVersioning({
     type: VersioningType.URI,
@@ -22,11 +26,14 @@ async function bootstrap() {
     .setDescription('The cats API description')
     .setVersion('1.0')
     .addTag('Nest JS Role Based Auth API')
-    .addBearerAuth({
-      type: 'http',
-      scheme: 'bearer',
-      description: 'Enter your JWT token',
-    }, 'jwt')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        description: 'Enter your JWT token',
+      },
+      'jwt',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {
@@ -34,8 +41,8 @@ async function bootstrap() {
     customSiteTitle: 'Nest JS Role Based Auth API',
     customfavIcon: 'https://www.google.com/favicon.ico',
     swaggerOptions: {
-      persistAuthrization: true
-    }
+      persistAuthrization: true,
+    },
   });
   await app.listen(3000);
 }

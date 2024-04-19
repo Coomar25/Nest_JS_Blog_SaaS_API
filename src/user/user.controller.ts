@@ -26,7 +26,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-@ApiTags("User")
+@ApiTags('User')
 @ApiBearerAuth('jwt')
 @Controller('user')
 export class UserController {

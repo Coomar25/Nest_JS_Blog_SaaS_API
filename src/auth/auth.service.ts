@@ -9,6 +9,10 @@ export class AuthService {
     return 'This action adds a new auth';
   }
 
+  async googleLogin(req) {
+    console.log('🚀 ~ AuthService ~ googleLogin ~ req:', req.user);
+  }
+
   findAll() {
     return `This action returns all auth`;
   }
