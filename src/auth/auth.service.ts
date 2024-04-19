@@ -10,7 +10,12 @@ export class AuthService {
   }
 
   async googleLogin(req) {
-    console.log('🚀 ~ AuthService ~ googleLogin ~ req:', req.user);
+    if (!req.user) {
+      return {
+        message: 'No user from google',
+      };
+    }
+    return req.user;
   }
 
   findAll() {
