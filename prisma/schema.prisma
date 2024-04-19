@@ -15,7 +15,7 @@ datasource db {
 
 model blog_user {
   id                     Int                      @id @default(autoincrement())
-  google_id              Int?                     @unique
+  google_id              String?                  @unique
   email                  String                   @unique
   name                   String
   password               String
@@ -33,6 +33,8 @@ model blog_user {
   blog_bookmarks         blog_bookmarks[]
   blog_like_dislike      blog_like_dislike[]
   blog_subscribe_letter  blog_subscribe_letter[]
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
 }
 
 enum BlogPostStatus {

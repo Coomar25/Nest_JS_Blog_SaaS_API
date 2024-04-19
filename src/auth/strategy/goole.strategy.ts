@@ -9,6 +9,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const clientId = configService.get('GOOGLE_CLIENT_ID');
     const clientSecretKey = configService.get('GOOGLE_CLIENT_SECRET');
     const callbackURLKey = configService.get('GOOGLE_CALLBACK_URL');
+
     if ((clientId || clientSecretKey || callbackURLKey) === undefined) {
       const checkIsExist =
         clientId === undefined
@@ -20,6 +21,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
               : '';
       throw new Error(checkIsExist);
     }
+
     super({
       clientID: clientId,
       clientSecret: clientSecretKey,
@@ -34,12 +36,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: any,
     done: VerifyCallback,
   ) {
-    const { name, emails, photos } = profile;
     console.log(
       '🚀 ~ GoogleStrategy ~ classGoogleStrategyextendsPassportStrategy ~ name, emails, photos:',
-      name,
-      emails,
-      photos,
+      profile,
     );
     done(null, profile);
   }
