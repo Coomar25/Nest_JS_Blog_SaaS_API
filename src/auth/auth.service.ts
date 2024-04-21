@@ -1,4 +1,4 @@
-import { Injectable, Next } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,12 +19,7 @@ export class AuthService {
     return 'This action adds a new auth';
   }
 
-  async googleLogin(req) {
-    console.log(
-      '🚀 ~ AuthService ~ googleLogin ~ req.user.emails[0].value:',
-      req.user.id,
-      req.user.emails[0].value,
-    );
+  async googleLogin(req: any) {
     if (!req.user) {
       return {
         message: 'No user from google',

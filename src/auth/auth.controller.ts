@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  UseFilters,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -15,12 +16,14 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { JwtAuthGuard } from './guard/jwt.guard';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { TokenErrorFilter } from 'src/helper/catch.exception';
 
 @ApiTags('Super-Admin')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @UseFilters(new TokenErrorFilter())
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth(@Req() req) {
@@ -29,7 +32,7 @@ export class AuthController {
 
   @Get('redirect/google')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req) {
+  async googleAuthRedirect(@Req() req: Request) {
     return this.authService.googleLogin(req);
   }
 
