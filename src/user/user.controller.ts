@@ -22,7 +22,15 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 import { RolesGuard } from 'src/auth/guard/role.guard';
 import { Roles } from 'src/auth/entities/roles.decorator';
 import { RoleEnum } from 'src/constants/enum';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -32,6 +40,22 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiCreatedResponse({
+    description: 'User Created Successfully',
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request',
+  })
+  @ApiConflictResponse({
+    description: 'Conflict',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({
+    description: 'Create User',
+    summary: 'Create User with Email and Password',
+  })
   @Post()
   @Version('1')
   create(@Body() createUserDto: CreateUserDto) {

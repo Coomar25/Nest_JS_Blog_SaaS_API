@@ -56,7 +56,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, {
     explorer: true,
     customSiteTitle: 'Nest JS Role Based Auth API',
-    customfavIcon: 'https://www.google.com/favicon.ico',
+    customfavIcon: 'https://www.swagger.com/favicon.ico',
     swaggerOptions: {
       persistAuthrization: true,
     },

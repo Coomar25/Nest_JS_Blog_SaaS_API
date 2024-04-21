@@ -89,23 +89,43 @@ export class CreateUserDto {
   @IsString()
   user_profile?: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: 'City is required',
+  })
+  @IsString({
+    message: 'City must be a string',
+  })
   city: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: 'Country is required',
+  })
+  @IsString({
+    message: 'Country must be a string',
+  })
   country: string;
 
-  @IsNotEmpty()
-  @IsDate()
+  @IsNotEmpty({
+    message: 'Date of Birth is required',
+  })
+  @IsDate({
+    message: 'Date of Birth must be a date',
+  })
   dob: Date;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: 'Postal is required',
+  })
+  @IsString({
+    message: 'Postal must be a string',
+  })
   postal?: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: 'State is required',
+  })
+  @IsString({
+    message: 'State must be a string',
+  })
   state: string;
 }
