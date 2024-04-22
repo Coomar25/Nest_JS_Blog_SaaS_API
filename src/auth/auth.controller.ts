@@ -3,66 +3,72 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   UseGuards,
   Req,
-  UseFilters,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-import { JwtAuthGuard } from './guard/jwt.guard';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { TokenErrorFilter } from 'src/helper/catch.exception';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ResponseEnum } from 'src/constants/enum';
 
-@ApiTags('Super-Admin')
+@ApiTags('Super-Admin and User Google Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private prismaService: PrismaService,
+  ) {}
 
-  @UseFilters(new TokenErrorFilter())
   @Get('google')
+  @ApiResponse({
+    description: 'Google Auth by the user',
+  })
   @UseGuards(AuthGuard('google'))
+  @ApiOperation({
+    description: 'Google Auth',
+    summary: 'Google Auth for the user',
+  })
   async googleAuth(@Req() req) {
     console.log('🚀 ~ AuthController ~ req:', req);
   }
 
   @Get('redirect/google')
   @UseGuards(AuthGuard('google'))
+  @ApiOperation({
+    description: 'Google Auth Redirect to the user',
+    summary: 'Google Auth Redirect after successful login',
+  })
   async googleAuthRedirect(@Req() req: Request) {
     return this.authService.googleLogin(req);
   }
 
   @ApiResponse({
-    description: 'For creating the suth service',
+    description: 'For creating the super admin',
+  })
+  @ApiOperation({
+    description: 'Create Super Admin',
+    summary: 'Create Super Admin with Email and Password',
   })
   @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
-  }
-
-  @Get()
-  @ApiBearerAuth('jwt')
-  @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  async create(@Body() createAuthDto: CreateAuthDto) {
+    try {
+      const isExist = await this.prismaService.blog_user.findUnique({
+        where: {
+          email: createAuthDto.email,
+        },
+      });
+      if (isExist) {
+        return {
+          message: ResponseEnum.CONFLICT,
+          inbox: 'User with that email already exist',
+        };
+      }
+      return await this.authService.create(createAuthDto);
+    } catch (err) {
+      throw new InternalServerErrorException(`${err.message}`);
+    }
   }
 }

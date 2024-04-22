@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { random } from 'src/helper/random';
 import { JwtService } from '@nestjs/jwt';
@@ -14,9 +13,18 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  create(createAuthDto: CreateAuthDto) {
-    console.log('🚀 ~ AuthService ~ create ~ createAuthDto:', createAuthDto);
-    return 'This action adds a new auth';
+  async create(createAuthDto: CreateAuthDto) {
+    try {
+      return await this.prismaService.blog_user.create({
+        data: {
+          ...createAuthDto,
+          deleted: false,
+          role: RoleEnum.SUPERADMIN,
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async googleLogin(req: any) {
@@ -52,22 +60,5 @@ export class AuthService {
       });
       return access_token;
     }
-  }
-
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    console.log('🚀 ~ AuthService ~ update ~ updateAuthDto:', updateAuthDto);
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
   }
 }

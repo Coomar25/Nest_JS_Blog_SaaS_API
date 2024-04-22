@@ -16,7 +16,7 @@ export class AdminService {
     try {
       console.log('🚀 ~ AdminService ~ singin ~ adminLoginDto:', adminLoginDto);
       const payload = { id: 1, role: 'Admin' };
-      const access_token = await this.jwtService.sign(payload);
+      const access_token = this.jwtService.sign(payload);
       return {
         access_token,
       };

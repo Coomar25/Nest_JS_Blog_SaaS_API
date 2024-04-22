@@ -1,6 +1,7 @@
 export enum RoleEnum {
-  ADMIN = 'Admin',
-  USER = 'User',
+  SUPERADMIN = 'SUPERADMIN',
+  ADMIN = 'ADMIN',
+  USER = 'USER',
 }
 
 export enum ResponseEnum {

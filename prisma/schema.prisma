@@ -13,6 +13,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum RoleEnum {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BlogPostStatus {
+  PUBLISHED
+  PENDING
+  DELETED
+  ARCHIVED
+}
+
 model blog_user {
   id                     Int                      @id @default(autoincrement())
   google_id              String?                  @unique
@@ -27,6 +45,9 @@ model blog_user {
   dob                    String?
   postal                 String?                  @default("")
   state                  String?                  @default("")
+  role                   RoleEnum                 @default(USER)
+  status                 UserStatus               @default(ACTIVE)
+  deleted                Boolean?                 @default(false)
   blogpost               blog_post[]
   blog_comment           blog_comment[]
   blog_total_viewed_post blog_total_viewed_post[]
@@ -35,11 +56,6 @@ model blog_user {
   blog_subscribe_letter  blog_subscribe_letter[]
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
-}
-
-enum BlogPostStatus {
-  PUBLISHED
-  PENDING
 }
 
 model blog_categories {

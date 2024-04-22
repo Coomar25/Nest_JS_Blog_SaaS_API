@@ -101,7 +101,7 @@ export class UserService {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
 
-      const access_token = await this.jwtService.sign({
+      const access_token = this.jwtService.sign({
         id: isExist.id,
         role: RoleEnum.USER,
       });
