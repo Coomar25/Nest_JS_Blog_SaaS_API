@@ -11,6 +11,8 @@ import { EmailService } from 'src/email/email.service';
 import { random } from 'src/helper/random';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { UserEntity } from './entities/user.entity';
+import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -47,7 +49,7 @@ export class UserService {
           city: createUserDto.city,
           contact: createUserDto.contact,
           country: createUserDto.country,
-          dob: `${dateofbirth}`,
+          dob: `${new Date(dateofbirth).toISOString().slice(0, 10)}`,
           name: createUserDto.name,
           postal: createUserDto?.postal,
           state: createUserDto?.state,
@@ -56,6 +58,7 @@ export class UserService {
         },
       });
       await this.emailSerice.sendUserWelcome(createUser, non_encryptedPassword);
+
       return {
         message: ResponseEnum.SUCCESS,
         status: HttpStatus.OK,

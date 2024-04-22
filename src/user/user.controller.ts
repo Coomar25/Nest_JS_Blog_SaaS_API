@@ -35,7 +35,6 @@ import { Response } from 'express';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('User')
-@ApiBearerAuth('jwt')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -71,6 +70,7 @@ export class UserController {
   }
 
   @Get('profile')
+  @ApiBearerAuth('jwt')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Version('1')
   @Roles(RoleEnum.USER, RoleEnum.ADMIN)
@@ -80,6 +80,7 @@ export class UserController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth('jwt')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.USER)
   @Version('1')
@@ -89,6 +90,7 @@ export class UserController {
   }
 
   @Get('all')
+  @ApiBearerAuth('jwt')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.ADMIN)
   @Version('1')
@@ -98,6 +100,7 @@ export class UserController {
 
   @Get('single/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth('jwt')
   @Roles(RoleEnum.ADMIN)
   @Version('1')
   singleUser(

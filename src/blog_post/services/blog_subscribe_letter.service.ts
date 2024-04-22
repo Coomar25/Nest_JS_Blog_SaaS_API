@@ -13,27 +13,31 @@ export class BlogSubscribeLetter {
   constructor(private prismaService: PrismaService) {}
 
   async createBlogSubscribeLetter(subscribeDto: SubscribeBlogDto) {
-      console.log("🚀 ~ BlogSubscribeLetter ~ createBlogSubscribeLetter ~ subscribeDto:", subscribeDto.email, subscribeDto.userId)
-      const isExist = await this.prismaService.blog_user.findUnique({
-        where: {
-          id: subscribeDto.userId,
-        },
-      });
+    console.log(
+      '🚀 ~ BlogSubscribeLetter ~ createBlogSubscribeLetter ~ subscribeDto:',
+      subscribeDto.email,
+      subscribeDto.userId,
+    );
+    const isExist = await this.prismaService.blog_user.findUnique({
+      where: {
+        id: subscribeDto.userId,
+      },
+    });
 
-      if (!isExist) {
-        throw new HttpException(ResponseEnum.NOT_FOUND, HttpStatus.NOT_FOUND);
-      }
-      await this.prismaService.blog_subscribe_letter.create({
-        data: {
-          email: subscribeDto.email,
-          user_id: subscribeDto.userId,
-        },
-      });
+    if (!isExist) {
+      throw new HttpException(ResponseEnum.NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+    await this.prismaService.blog_subscribe_letter.create({
+      data: {
+        email: subscribeDto.email,
+        user_id: subscribeDto.userId,
+      },
+    });
 
-      return {
-        message: ResponseEnum.SUCCESS,
-        status: HttpStatus.ACCEPTED,
-      };
+    return {
+      message: ResponseEnum.SUCCESS,
+      status: HttpStatus.ACCEPTED,
+    };
   }
 
   async blogUnsubscribeLetter(req: SubscribeBlogRequest) {

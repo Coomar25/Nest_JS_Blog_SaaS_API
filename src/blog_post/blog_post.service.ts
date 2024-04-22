@@ -86,7 +86,11 @@ export class BlogPostService {
     }
   }
 
-  async create(createBlogPostDto: CreateBlogPostDto, req: any, file: any): Promise<BlogEntity> {
+  async create(
+    createBlogPostDto: CreateBlogPostDto,
+    req: any,
+    file: any,
+  ): Promise<BlogEntity> {
     try {
       const [isExist, isValid_authorId, isValid_categoryId] = await Promise.all(
         [
@@ -157,8 +161,6 @@ export class BlogPostService {
           },
         },
       });
-
-   
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

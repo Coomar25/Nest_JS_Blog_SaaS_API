@@ -4,6 +4,12 @@ export enum RoleEnum {
   USER = 'USER',
 }
 
+export enum UserStatusEnum {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  DELETED = 'DELETED',
+}
+
 export enum ResponseEnum {
   SUCCESS = 'Success',
   FAILED = 'Failed',

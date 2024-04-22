@@ -95,6 +95,11 @@ export class CreateUserDto {
   @IsString({
     message: 'City must be a string',
   })
+  @ApiProperty({
+    title: 'City',
+    description: 'City of the user',
+    example: 'Kathmandu',
+  })
   city: string;
 
   @IsNotEmpty({
@@ -102,6 +107,11 @@ export class CreateUserDto {
   })
   @IsString({
     message: 'Country must be a string',
+  })
+  @ApiProperty({
+    title: 'Country',
+    description: 'Country of the user',
+    example: 'Nepal',
   })
   country: string;
 
@@ -111,6 +121,11 @@ export class CreateUserDto {
   @IsDate({
     message: 'Date of Birth must be a date',
   })
+  @ApiProperty({
+    title: 'Date of Birth',
+    description: 'Date of Birth of the user',
+    example: '1996-08-24',
+  })
   dob: Date;
 
   @IsNotEmpty({
@@ -119,6 +134,11 @@ export class CreateUserDto {
   @IsString({
     message: 'Postal must be a string',
   })
+  @ApiProperty({
+    title: 'Postal',
+    description: 'Postal of the user',
+    example: '44600',
+  })
   postal?: string;
 
   @IsNotEmpty({
@@ -126,6 +146,11 @@ export class CreateUserDto {
   })
   @IsString({
     message: 'State must be a string',
+  })
+  @ApiProperty({
+    title: 'State',
+    description: 'State of the user',
+    example: 'Bagmati',
   })
   state: string;
 }

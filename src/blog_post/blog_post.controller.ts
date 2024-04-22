@@ -32,13 +32,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { BlogBookMarksServices } from './services/blog_bookmarks.service';
 import { FileStorageService } from 'src/file-storage/file-storage.service';
 import { BlogApproveService } from './services/blog_approve.service';
-import { SubscribeBlogRequest } from './entities/blog_post.entity';
 import { BlogSubscribeLetter } from './services/blog_subscribe_letter.service';
 import { ParsePositiveIntPipe } from './pipes/positive-integer-parse-pipe';
 import { UpdateBlogCategoryDto } from './dto/update-blog_post.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@ApiTags("Blog-Posts")
+@ApiTags('Blog-Posts')
 @ApiBearerAuth('jwt')
 @Controller('blog-post')
 export class BlogPostController {
@@ -246,8 +245,11 @@ export class BlogPostController {
 
   @Post('subscribe')
   @Version('1')
-  callSubscribeBlog(@Body() subscribeDto: SubscribeBlogDto ) {
-    console.log("🚀 ~ BlogPostController ~ callSubscribeBlog ~ subscribeDto:", subscribeDto)
+  callSubscribeBlog(@Body() subscribeDto: SubscribeBlogDto) {
+    console.log(
+      '🚀 ~ BlogPostController ~ callSubscribeBlog ~ subscribeDto:',
+      subscribeDto,
+    );
     return this.blogSubscriveLetter.createBlogSubscribeLetter(subscribeDto);
   }
 }
