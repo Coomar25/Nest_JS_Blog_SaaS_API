@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AdminLoginDto } from './dto/login-admin.dto';
+import { RoleEnum } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -15,7 +16,7 @@ export class AdminService {
     console.log('🚀 ~ AdminService ~ signin ~ adminLoginDto:', adminLoginDto);
     try {
       console.log('🚀 ~ AdminService ~ singin ~ adminLoginDto:', adminLoginDto);
-      const payload = { id: 1, role: 'Admin' };
+      const payload = { id: 1, role: RoleEnum.ADMIN };
       const access_token = this.jwtService.sign(payload);
       return {
         access_token,
