@@ -9,11 +9,14 @@ import { ResponseEnum, RoleEnum } from 'src/constants/enum';
 import { LikeDislikeDto } from './dto/like-dislike-post.dto';
 import { BlogPostStatus } from '@prisma/client';
 import { UpdateBlogCategoryDto } from './dto/update-blog_post.dto';
-import { BlogEntity } from './entities/blog.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BlogPostService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private configService: ConfigService,
+  ) {}
 
   async createBlogCategory(blogCategoryDto: BlogCatgoryDto) {
     try {
@@ -86,84 +89,92 @@ export class BlogPostService {
     }
   }
 
-  async create(
-    createBlogPostDto: CreateBlogPostDto,
-    req: any,
-    file: any,
-  ): Promise<BlogEntity> {
-    try {
-      const [isExist, isValid_authorId, isValid_categoryId] = await Promise.all(
-        [
-          this.prismaService.blog_post.findUnique({
-            where: {
-              slug: createBlogPostDto.slug,
-            },
-          }),
-          this.prismaService.blog_user.findUnique({
-            where: {
-              id: +req.user.id,
-            },
-          }),
-          this.prismaService.blog_categories.findUnique({
-            where: {
-              id: +createBlogPostDto.category_id,
-            },
-          }),
-        ],
+  async create(createBlogPostDto: CreateBlogPostDto, req: any, file: any) {
+    console.log(
+      '🚀 ~ BlogPostService ~ create ~ createBlogPostDto:',
+      createBlogPostDto,
+    );
+    // Create a slug for the blog from a blogname
+    const slug = createBlogPostDto.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/[\s-]+/g, '-') // Replace spaces and multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Trim hyphens at the start and end of the slug
+
+    console.log('🚀 ~ BlogPostService ~ slug:', slug, req.user.id);
+
+    const [isExist, isValid_authorId, isValid_categoryId] = await Promise.all([
+      this.prismaService.blog_post.findUnique({
+        where: {
+          slug: slug,
+        },
+      }),
+      this.prismaService.blog_user.findUnique({
+        where: {
+          id: +req.user.id,
+        },
+      }),
+      this.prismaService.blog_categories.findUnique({
+        where: {
+          id: +createBlogPostDto.category_id,
+        },
+      }),
+    ]);
+    console.log(
+      '🚀 ~ BlogPostService ~ isExist, isValid_authorId, isValid_categoryId:',
+      isExist,
+      isValid_authorId,
+      isValid_categoryId,
+    );
+
+    const checkIfIsArray = Array.isArray(createBlogPostDto.tags);
+    if (!checkIfIsArray) {
+      throw new HttpException(
+        'Tags should be an array',
+        HttpStatus.BAD_REQUEST,
       );
+    }
 
-      console.log(
-        `type of tags is ${(createBlogPostDto.tags, typeof createBlogPostDto.tags)}`,
+    if (!isValid_categoryId && !isValid_authorId) {
+      const message = !isValid_categoryId
+        ? 'Category with that id not found'
+        : 'Author with that id not found';
+      throw new HttpException(
+        `${message}` + ' ' + ResponseEnum.NOT_FOUND,
+        HttpStatus.NOT_FOUND,
       );
+    }
 
-      const checkIfIsArray = Array.isArray(createBlogPostDto.tags);
-      if (!checkIfIsArray) {
-        throw new HttpException(
-          'Tags should be an array',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+    if (isExist) {
+      throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
+    }
 
-      if (!isValid_categoryId || !isValid_authorId) {
-        const message = !isValid_categoryId
-          ? 'Category with that id not found'
-          : 'Author with that id not found';
-        throw new HttpException(
-          `${message}` + ' ' + ResponseEnum.NOT_FOUND,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      if (isExist) {
-        throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
-      }
-
-      return await this.prismaService.blog_post.create({
-        data: {
-          slug: createBlogPostDto.slug,
-          title: createBlogPostDto.title,
-          description: createBlogPostDto.description,
-          tags: createBlogPostDto.tags,
-          cover_image: file.filename ? file.filename : null,
-          status:
-            req.user.currentRole === RoleEnum.ADMIN
-              ? BlogPostStatus.PUBLISHED
-              : BlogPostStatus.PENDING,
-          blog_categories: {
-            connect: {
-              id: Number(isValid_categoryId.id),
-            },
-          },
-          blog_user: {
-            connect: {
-              id: Number(isValid_authorId.id),
-            },
+    return await this.prismaService.blog_post.create({
+      data: {
+        slug: slug,
+        title: createBlogPostDto.title,
+        description: createBlogPostDto.description,
+        tags: createBlogPostDto.tags,
+        cover_image: file.filename
+          ? `${this.configService.get('/BASE_URL')}/file/${file.filename}`
+          : null,
+        status:
+          req.user.currentRole === RoleEnum.ADMIN
+            ? BlogPostStatus.PUBLISHED
+            : BlogPostStatus.PENDING,
+        blog_categories: {
+          connect: {
+            id: Number(isValid_categoryId.id),
           },
         },
-      });
-    } catch (err) {
-      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+        blog_user: {
+          connect: {
+            id: Number(isValid_authorId.id),
+          },
+        },
+      },
+    });
   }
 
   async createBlogComment(

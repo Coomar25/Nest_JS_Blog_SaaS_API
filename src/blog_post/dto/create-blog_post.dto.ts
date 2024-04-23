@@ -11,10 +11,6 @@ import {
 export class CreateBlogPostDto {
   @IsNotEmpty()
   @IsString()
-  slug: string;
-
-  @IsNotEmpty()
-  @IsString()
   title: string;
 
   @IsNotEmpty()

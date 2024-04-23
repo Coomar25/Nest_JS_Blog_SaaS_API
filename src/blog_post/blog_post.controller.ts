@@ -150,7 +150,7 @@ export class BlogPostController {
    * @param req - The request object.
    * @returns The created blog post.
    */
-  @Post()
+  @Post('create')
   @Version('1')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.ADMIN, RoleEnum.USER)

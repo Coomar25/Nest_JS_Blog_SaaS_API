@@ -11,8 +11,6 @@ import { EmailService } from 'src/email/email.service';
 import { random } from 'src/helper/random';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { UserEntity } from './entities/user.entity';
-import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class UserService {
