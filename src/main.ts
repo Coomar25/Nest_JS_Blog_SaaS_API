@@ -15,6 +15,11 @@ async function bootstrap() {
     //   logger: new CustomLogger(),
     // }
   );
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept',
+  });
   //swagger
   app.enableVersioning({
     type: VersioningType.URI,
