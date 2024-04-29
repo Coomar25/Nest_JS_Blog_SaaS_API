@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed": "node dist/src/populate/seed",
+    "seed:refresh": "node dist/populate/seed --refresh"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.11.2",
@@ -44,6 +46,7 @@
     "express-basic-auth": "^1.2.1",
     "multer": "^1.4.5-lts.1",
     "nest-winston": "^1.9.4",
+    "nestjs-seeder": "^0.3.2",
     "nodemailer": "^6.9.13",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
