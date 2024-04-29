@@ -61,6 +61,7 @@ model blog_user {
 model blog_categories {
   id        Int         @id @default(autoincrement())
   name      String
+  slug      String      @unique
   tags      String[]
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt

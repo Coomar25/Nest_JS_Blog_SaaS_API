@@ -35,7 +35,7 @@ import { BlogApproveService } from './services/blog_approve.service';
 import { BlogSubscribeLetter } from './services/blog_subscribe_letter.service';
 import { ParsePositiveIntPipe } from './pipes/positive-integer-parse-pipe';
 import { UpdateBlogCategoryDto } from './dto/update-blog_post.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Blog-Posts')
 @ApiBearerAuth('jwt')
@@ -48,6 +48,11 @@ export class BlogPostController {
     private readonly blogSubscriveLetter: BlogSubscribeLetter,
   ) {}
 
+  @ApiOperation({
+    description: 'Get All Blog Post',
+    summary: 'Get All Blog Post',
+    deprecated: true,
+  })
   @Post('category')
   @Version('1')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -56,6 +61,11 @@ export class BlogPostController {
     return this.blogPostService.createBlogCategory(blogCategoryDto);
   }
 
+  @ApiOperation({
+    description: 'Get All Blog Post',
+    summary: 'Get All Blog Post',
+    deprecated: true,
+  })
   @Patch('category/:blog_id')
   @Version('1')
   @UseGuards(JwtAuthGuard, RolesGuard)

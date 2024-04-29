@@ -29,6 +29,7 @@ export class BlogPostService {
       if (isExist) {
         throw new HttpException(ResponseEnum.CONFLICT, HttpStatus.CONFLICT);
       }
+      const slug = blogCategoryDto.name.toLowerCase().replace(' ', '-');
 
       await this.prismaService.blog_categories.create({
         data: {
@@ -36,6 +37,7 @@ export class BlogPostService {
           tags: {
             set: blogCategoryDto.tags,
           },
+          slug,
         },
       });
 

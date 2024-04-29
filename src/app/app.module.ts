@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { LoggerModule } from 'utils/logger.module';
 import { GoogleStrategy } from 'src/auth/strategy/goole.strategy';
+import { CategoryModule } from 'src/category/category.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { GoogleStrategy } from 'src/auth/strategy/goole.strategy';
     UserModule,
     AdminModule,
     BlogPostModule,
+    CategoryModule,
     //for static uploded image rendering
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '/uploads'),
