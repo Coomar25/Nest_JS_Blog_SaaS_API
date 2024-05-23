@@ -16,8 +16,8 @@ async function bootstrap() {
     // }
   );
   app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: 'http://localhost:3000',
+    methods: 'GET,HEAD,UPDATE,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept',
   });
   //swagger
