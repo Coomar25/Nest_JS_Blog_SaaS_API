@@ -16,9 +16,11 @@ async function bootstrap() {
     // }
   );
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: '*',
     methods: 'GET,HEAD,UPDATE,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept',
+    credentials: true,
+    //Remember to set credentials: true if you're using cookies or other credentials in your requests. This allows the server to accept credentials from the client even when they're on different domains.
   });
   //swagger
   app.enableVersioning({
