@@ -9,27 +9,45 @@ import {
 } from 'class-validator';
 
 export class CreateBlogPostDto {
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: 'Title is required',
+  })
+  @IsString({
+    message: 'Title must be a string',
+  })
   title: string;
 
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Description is required',
+  })
   @IsString()
   description: string;
 
-  @IsNotEmpty()
-  @IsArray()
+  @IsNotEmpty({
+    message: 'Tags is required',
+  })
+  @IsArray({
+    message: 'Tags must be an array',
+  })
   tags: string[];
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: 'Content is required',
+  })
+  @IsString({
+    message: 'Content must be a string',
+  })
   status: BlogPostStatus;
 
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Author id is required',
+  })
   @IsNumber()
   authorId: number;
 
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Category id is required',
+  })
   @IsNumber()
   category_id: number;
 
