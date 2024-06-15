@@ -1,6 +1,7 @@
 # Nest js - Role based authentication with passport and jwt (RBAC)
 
 RBAC in nest js
+// "start": "concurrently \"nest start\" \"npx prisma studio\"",
 
 ## Features:
 
